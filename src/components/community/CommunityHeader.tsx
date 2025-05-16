@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Bell, BellOff } from 'lucide-react';
+import { Subreddit } from '@/data/subredditData';
 
 interface CommunityHeaderProps {
   name: string;
@@ -10,18 +11,40 @@ interface CommunityHeaderProps {
   onlineCount: number;
   bannerUrl?: string;
   iconUrl?: string;
+  isJoined?: boolean;
+  onToggleJoin?: () => void;
 }
 
-const CommunityHeader = ({
-  name,
-  description,
-  memberCount,
-  onlineCount,
-  bannerUrl,
-  iconUrl
-}: CommunityHeaderProps) => {
-  const [isJoined, setIsJoined] = useState(false);
+// Add an alternative prop interface that accepts a Subreddit object
+interface CommunityHeaderWithSubredditProps {
+  subreddit: Subreddit;
+  isSubscribed?: boolean;
+  onToggleSubscribe?: () => void;
+}
+
+// Union type that accepts either prop style
+type Props = CommunityHeaderProps | CommunityHeaderWithSubredditProps;
+
+// Type guard to check which prop style was used
+const hasSubreddit = (props: Props): props is CommunityHeaderWithSubredditProps => {
+  return 'subreddit' in props;
+};
+
+const CommunityHeader = (props: Props) => {
+  // Initialize state based on incoming props
+  const [localIsJoined, setLocalIsJoined] = useState(false);
   const [notificationStatus, setNotificationStatus] = useState<'all' | 'some' | 'none'>('none');
+
+  // Extract values from either prop style
+  const name = hasSubreddit(props) ? props.subreddit.name : props.name;
+  const description = hasSubreddit(props) ? props.subreddit.description : props.description;
+  const memberCount = hasSubreddit(props) ? props.subreddit.memberCount : props.memberCount;
+  const onlineCount = hasSubreddit(props) ? props.subreddit.onlineCount : props.onlineCount;
+  const bannerUrl = hasSubreddit(props) ? props.subreddit.bannerImage : props.bannerUrl;
+  const iconUrl = hasSubreddit(props) ? props.subreddit.icon : props.iconUrl;
+  
+  // Handle join status
+  const isJoined = hasSubreddit(props) ? (props.isSubscribed ?? localIsJoined) : (props.isJoined ?? localIsJoined);
   
   const formatMemberCount = (count: number) => {
     if (count >= 1000000) {
@@ -34,7 +57,13 @@ const CommunityHeader = ({
   };
   
   const toggleJoin = () => {
-    setIsJoined(!isJoined);
+    if (hasSubreddit(props) && props.onToggleSubscribe) {
+      props.onToggleSubscribe();
+    } else if (!hasSubreddit(props) && props.onToggleJoin) {
+      props.onToggleJoin();
+    } else {
+      setLocalIsJoined(!isJoined);
+    }
   };
   
   const toggleNotification = () => {
