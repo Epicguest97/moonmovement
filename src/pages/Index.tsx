@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import CreatePostCard from '@/components/post/CreatePostCard';
 import PostCard, { Post } from '@/components/post/PostCard';
@@ -65,10 +66,131 @@ const mockPosts: Post[] = [
     imageUrl: 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=500&h=350&fit=crop',
     isText: false,
   },
+  {
+    id: '6',
+    title: 'Just finished building my dream gaming PC',
+    content: 'After months of saving, I finally built my dream gaming setup! RTX 4090, i9-13900K, 64GB RAM, and a custom water cooling loop. The performance is insane!',
+    subreddit: 'pcmasterrace',
+    author: 'techgeek',
+    timestamp: '3 hours ago',
+    voteScore: 3472,
+    commentCount: 215,
+    imageUrl: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=500&h=350&fit=crop',
+    isText: true,
+  },
+  {
+    id: '7',
+    title: 'Found this incredible secluded beach in Thailand',
+    content: '',
+    subreddit: 'travel',
+    author: 'wanderlust',
+    timestamp: '2 days ago',
+    voteScore: 6821,
+    commentCount: 412,
+    imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=500&h=350&fit=crop',
+    isText: false,
+  },
+  {
+    id: '8',
+    title: 'How to prepare for a software engineering interview?',
+    content: 'I have an interview at a FAANG company next month. Any advice on how to prepare for the coding challenges and system design questions?',
+    subreddit: 'cscareerquestions',
+    author: 'newgrad2023',
+    timestamp: '8 hours ago',
+    voteScore: 342,
+    commentCount: 89,
+    isText: true,
+  },
+  {
+    id: '9',
+    title: 'Latest research on renewable energy solutions',
+    content: 'A new study shows promising results for efficient solar panel technology',
+    subreddit: 'science',
+    author: 'greentech',
+    timestamp: '4 hours ago',
+    voteScore: 754,
+    commentCount: 67,
+    isLink: true,
+    linkUrl: 'https://example.com/renewable-energy-research',
+  },
+  {
+    id: '10',
+    title: 'Mountain view from my camping trip last weekend',
+    content: '',
+    subreddit: 'natureisbeautiful',
+    author: 'outdoorsy',
+    timestamp: '1 day ago',
+    voteScore: 5291,
+    commentCount: 104,
+    imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=500&h=350&fit=crop',
+    isText: false,
+  },
 ];
+
+// Get unique subreddits for trending
+const subreddits = Array.from(new Set(mockPosts.map(post => post.subreddit)));
 
 const Index = () => {
   const [sortBy, setSortBy] = useState<'hot' | 'new' | 'top'>('hot');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  
+  // Filter and sort posts
+  const sortedPosts = useMemo(() => {
+    let filtered = [...mockPosts];
+    
+    // Apply search filter if there's a query
+    if (searchQuery) {
+      filtered = filtered.filter(post => 
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.subreddit.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.author.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Apply sorting
+    switch (sortBy) {
+      case 'new':
+        // Sort by newest first (using timestamp as proxy)
+        return filtered.sort((a, b) => {
+          // Extract hours/days from timestamp strings
+          const aTime = a.timestamp.includes('hour') ? 
+            parseInt(a.timestamp) : 
+            parseInt(a.timestamp) * 24; // Convert days to hours
+          const bTime = b.timestamp.includes('hour') ? 
+            parseInt(b.timestamp) : 
+            parseInt(b.timestamp) * 24; // Convert days to hours
+          
+          return aTime - bTime; // Lower hours = newer
+        });
+      case 'top':
+        // Sort by vote score descending
+        return filtered.sort((a, b) => b.voteScore - a.voteScore);
+      case 'hot':
+      default:
+        // Hot is a combination of recency and score
+        return filtered.sort((a, b) => {
+          // Extract hours from timestamp as a recency factor
+          const aTime = a.timestamp.includes('hour') ? 
+            parseInt(a.timestamp) : 
+            parseInt(a.timestamp) * 24; // Convert days to hours
+          const bTime = b.timestamp.includes('hour') ? 
+            parseInt(b.timestamp) : 
+            parseInt(b.timestamp) * 24; // Convert days to hours
+          
+          // Hot score formula: (votes / hours^1.5)
+          const aHot = a.voteScore / Math.pow(aTime + 2, 1.5);
+          const bHot = b.voteScore / Math.pow(bTime + 2, 1.5);
+          
+          return bHot - aHot;
+        });
+    }
+  }, [sortBy, searchQuery, mockPosts]);
+  
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
   
   return (
     <MainLayout>
@@ -124,14 +246,39 @@ const Index = () => {
               </div>
             </div>
             
-            {mockPosts.map(post => (
-              <PostCard key={post.id} post={post} />
-            ))}
+            {sortedPosts.length > 0 ? (
+              sortedPosts.map(post => (
+                <PostCard key={post.id} post={post} />
+              ))
+            ) : (
+              <div className="bg-white p-8 border border-gray-200 rounded-md text-center">
+                <p className="text-gray-500">No posts match your search.</p>
+              </div>
+            )}
           </TabsContent>
           
           <TabsContent value="trending">
-            <div className="bg-white p-4 border border-gray-200 rounded-md">
-              <p className="text-center text-gray-500">Trending content will appear here</p>
+            <div className="bg-white border border-gray-200 rounded-md">
+              <h3 className="text-lg font-medium p-4 border-b">Trending Communities</h3>
+              <div className="p-2">
+                {subreddits.slice(0, 5).map((subreddit, index) => (
+                  <div key={subreddit} className="p-2 hover:bg-gray-50 rounded-md">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-reddit-primary text-white rounded-full flex items-center justify-center mr-3">
+                        <span className="font-bold">{index + 1}</span>
+                      </div>
+                      <div>
+                        <a href={`/r/${subreddit}`} className="font-medium hover:underline">
+                          r/{subreddit}
+                        </a>
+                        <p className="text-xs text-gray-500">
+                          {Math.floor(Math.random() * 1000) + 100} members online
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </TabsContent>
         </Tabs>
