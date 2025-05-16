@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import CreatePostCard from '@/components/post/CreatePostCard';
 import PostCard, { Post } from '@/components/post/PostCard';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FireIcon, TrendingUp, Clock } from 'lucide-react';
+import { Flame, TrendingUp, Clock } from 'lucide-react';
 
 // Mock data for posts
 const mockPosts: Post[] = [
@@ -101,7 +100,7 @@ const Index = () => {
                   className={sortBy === 'hot' ? 'bg-gray-100 text-gray-900' : ''}
                   onClick={() => setSortBy('hot')}
                 >
-                  <FireIcon size={16} className="mr-1" />
+                  <Flame size={16} className="mr-1" />
                   Hot
                 </Button>
                 <Button 
