@@ -27,12 +27,12 @@ const VoteControls = ({
   return (
     <div className={cn(
       "flex items-center", 
-      vertical ? "flex-col py-2 px-2 bg-gray-50" : "flex-row space-x-2"
+      vertical ? "flex-col py-2 px-2 bg-sidebar" : "flex-row space-x-2"
     )}>
       <button 
         className={cn(
           "vote-button flex items-center justify-center w-6 h-6 rounded-sm",
-          voteStatus === 'up' ? "text-reddit-primary" : "text-gray-400 hover:text-gray-800"
+          voteStatus === 'up' ? "text-sidebar-primary" : "text-gray-400 hover:text-gray-200"
         )}
         onClick={() => onVote('up')}
         aria-label="Upvote"
@@ -42,8 +42,8 @@ const VoteControls = ({
       
       <span className={cn(
         "font-medium text-xs py-1",
-        voteStatus === 'up' ? "text-reddit-primary" : 
-        voteStatus === 'down' ? "text-blue-600" : "text-gray-800"
+        voteStatus === 'up' ? "text-sidebar-primary" : 
+        voteStatus === 'down' ? "text-blue-600" : "text-gray-200"
       )}>
         {formatScore(score)}
       </span>
@@ -51,7 +51,7 @@ const VoteControls = ({
       <button 
         className={cn(
           "vote-button flex items-center justify-center w-6 h-6 rounded-sm",
-          voteStatus === 'down' ? "text-blue-600" : "text-gray-400 hover:text-gray-800"
+          voteStatus === 'down' ? "text-blue-600" : "text-gray-400 hover:text-gray-200"
         )}
         onClick={() => onVote('down')}
         aria-label="Downvote"

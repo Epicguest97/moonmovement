@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, Link as LinkIcon } from 'lucide-react';
+import { Calendar, Link as LinkIcon, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export interface NewsItem {
@@ -14,6 +14,7 @@ export interface NewsItem {
   publishedAt: string;
   imageUrl?: string;
   category: string;
+  content?: string;
 }
 
 interface NewsCardProps {
@@ -26,11 +27,13 @@ const NewsCard = ({ news }: NewsCardProps) => {
       <div className="flex flex-col md:flex-row">
         {news.imageUrl && (
           <div className="md:w-1/4">
-            <img 
-              src={news.imageUrl} 
-              alt={news.title} 
-              className="w-full h-48 md:h-full object-cover"
-            />
+            <Link to={`/news/${news.id}`}>
+              <img 
+                src={news.imageUrl} 
+                alt={news.title} 
+                className="w-full h-48 md:h-full object-cover"
+              />
+            </Link>
           </div>
         )}
         
@@ -46,7 +49,9 @@ const NewsCard = ({ news }: NewsCardProps) => {
             <span className="text-gray-500">{news.source}</span>
           </div>
           
-          <h3 className="text-lg font-bold mb-2 text-white">{news.title}</h3>
+          <Link to={`/news/${news.id}`}>
+            <h3 className="text-lg font-bold mb-2 text-white hover:text-sidebar-primary">{news.title}</h3>
+          </Link>
           
           <p className="text-sm text-gray-300 mb-4 line-clamp-2">{news.summary}</p>
           
@@ -61,9 +66,18 @@ const NewsCard = ({ news }: NewsCardProps) => {
               Read full story
             </a>
             
-            <Button variant="outline" size="sm" className="text-xs border-sidebar-border bg-transparent text-sidebar-primary hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-              Share
-            </Button>
+            <div className="flex gap-2">
+              <Link to={`/news/${news.id}`}>
+                <Button variant="outline" size="sm" className="text-xs border-sidebar-border bg-transparent text-sidebar-primary hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                  Read More
+                </Button>
+              </Link>
+              
+              <Button variant="outline" size="sm" className="text-xs border-sidebar-border bg-transparent text-sidebar-primary hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                <Share size={12} className="mr-1" />
+                Share
+              </Button>
+            </div>
           </div>
         </CardContent>
       </div>

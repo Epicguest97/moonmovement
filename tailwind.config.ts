@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -26,11 +25,11 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				reddit: {
-					primary: '#FF4500',
+					primary: '#22C55E',
 					secondary: '#0079D3',
 					dark: '#1A1A1B',
 					light: '#DAE0E6',
-					hover: '#FF5414',
+					hover: '#16A34A',
 				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
