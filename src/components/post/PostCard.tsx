@@ -46,7 +46,7 @@ const PostCard = ({ post, isCompact = false }: PostCardProps) => {
   };
 
   return (
-    <Card className="post-card overflow-hidden mb-3 bg-white hover:shadow">
+    <Card className="post-card overflow-hidden mb-3 bg-sidebar border-sidebar-border hover:border-sidebar-primary hover:shadow">
       <div className="flex">
         <VoteControls 
           score={currentVoteScore} 
@@ -55,13 +55,13 @@ const PostCard = ({ post, isCompact = false }: PostCardProps) => {
         />
         
         <div className="flex-1 p-2">
-          <div className="flex items-center text-xs text-gray-500 mb-1">
-            <Link to={`/r/${post.subreddit}`} className="font-medium text-black hover:underline mr-1">
+          <div className="flex items-center text-xs text-gray-400 mb-1">
+            <Link to={`/r/${post.subreddit}`} className="font-medium text-gray-200 hover:underline mr-1">
               r/{post.subreddit}
             </Link>
             <span className="mx-1">•</span>
             Posted by{" "}
-            <Link to={`/user/${post.author}`} className="hover:underline mx-1">
+            <Link to={`/user/${post.author}`} className="hover:underline mx-1 text-gray-400">
               u/{post.author}
             </Link>
             <span className="mx-1">•</span>
@@ -69,7 +69,7 @@ const PostCard = ({ post, isCompact = false }: PostCardProps) => {
           </div>
           
           <Link to={`/post/${post.id}`}>
-            <h2 className="text-lg font-medium mb-1">{post.title}</h2>
+            <h2 className="text-lg font-medium mb-1 text-white hover:text-sidebar-primary">{post.title}</h2>
           </Link>
           
           <PostContent post={post} isCompact={isCompact} />

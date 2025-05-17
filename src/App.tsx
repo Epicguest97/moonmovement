@@ -10,6 +10,7 @@ import Community from "./pages/Community";
 import Submit from "./pages/Submit";
 import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
+import News from "./pages/News";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/r/:communityName" element={<Community />} />
           <Route path="/submit" element={<Submit />} />
           <Route path="/user/:username" element={<UserProfile />} />
+          <Route path="/news" element={<News />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
