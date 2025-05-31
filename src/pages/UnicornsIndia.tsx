@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -203,7 +204,11 @@ const UnicornsIndia = () => {
                           />
                         )}
                         <div>
-                          <div className="font-semibold text-white">{company.name}</div>
+                          <Link to={`/startup/${company.id}`}>
+                            <div className="font-semibold text-white hover:text-sidebar-primary cursor-pointer">
+                              {company.name}
+                            </div>
+                          </Link>
                           <div className="text-xs text-gray-400 line-clamp-1">{company.description}</div>
                         </div>
                       </div>

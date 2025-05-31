@@ -14,6 +14,7 @@ import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import StartupNews from "./pages/StartupNews";
 import UnicornsIndia from "./pages/UnicornsIndia";
+import StartupDetail from "./pages/StartupDetail";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/news" element={<StartupNews />} />
           <Route path="/news/:newsId" element={<NewsDetail />} />
           <Route path="/unicorns-india" element={<UnicornsIndia />} />
+          <Route path="/startup/:startupId" element={<StartupDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
