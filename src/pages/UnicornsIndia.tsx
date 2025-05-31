@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Building2, Calendar, TrendingUp, MapPin } from 'lucide-react';
 
 interface UnicornCompany {
@@ -10,6 +11,7 @@ interface UnicornCompany {
   name: string;
   sector: string;
   valuation: string;
+  valuationNumber: number; // For sorting
   city: string;
   foundedYear: number;
   logoUrl?: string;
@@ -23,6 +25,7 @@ const unicornData: UnicornCompany[] = [
     name: 'Flipkart',
     sector: 'E-commerce',
     valuation: '$37.6B',
+    valuationNumber: 37.6,
     city: 'Bangalore',
     foundedYear: 2007,
     logoUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop',
@@ -31,20 +34,10 @@ const unicornData: UnicornCompany[] = [
   },
   {
     id: '2',
-    name: 'Paytm',
-    sector: 'Fintech',
-    valuation: '$16B',
-    city: 'Noida',
-    foundedYear: 2010,
-    logoUrl: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=100&h=100&fit=crop',
-    description: 'Digital payments and financial services platform.',
-    isUnicorn: true
-  },
-  {
-    id: '3',
     name: 'Byju\'s',
     sector: 'EdTech',
     valuation: '$22B',
+    valuationNumber: 22,
     city: 'Bangalore',
     foundedYear: 2011,
     logoUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=100&h=100&fit=crop',
@@ -52,21 +45,23 @@ const unicornData: UnicornCompany[] = [
     isUnicorn: true
   },
   {
-    id: '4',
-    name: 'Zomato',
-    sector: 'Food Delivery',
-    valuation: '$5.4B',
-    city: 'Gurgaon',
-    foundedYear: 2008,
-    logoUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=100&h=100&fit=crop',
-    description: 'Food delivery and restaurant discovery platform.',
+    id: '3',
+    name: 'Paytm',
+    sector: 'Fintech',
+    valuation: '$16B',
+    valuationNumber: 16,
+    city: 'Noida',
+    foundedYear: 2010,
+    logoUrl: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=100&h=100&fit=crop',
+    description: 'Digital payments and financial services platform.',
     isUnicorn: true
   },
   {
-    id: '5',
+    id: '4',
     name: 'Swiggy',
     sector: 'Food Delivery',
     valuation: '$10.7B',
+    valuationNumber: 10.7,
     city: 'Bangalore',
     foundedYear: 2014,
     logoUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=100&h=100&fit=crop',
@@ -74,10 +69,11 @@ const unicornData: UnicornCompany[] = [
     isUnicorn: true
   },
   {
-    id: '6',
+    id: '5',
     name: 'Razorpay',
     sector: 'Fintech',
     valuation: '$7.5B',
+    valuationNumber: 7.5,
     city: 'Bangalore',
     foundedYear: 2014,
     logoUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop',
@@ -85,10 +81,35 @@ const unicornData: UnicornCompany[] = [
     isUnicorn: true
   },
   {
+    id: '6',
+    name: 'Zomato',
+    sector: 'Food Delivery',
+    valuation: '$5.4B',
+    valuationNumber: 5.4,
+    city: 'Gurgaon',
+    foundedYear: 2008,
+    logoUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=100&h=100&fit=crop',
+    description: 'Food delivery and restaurant discovery platform.',
+    isUnicorn: true
+  },
+  {
     id: '7',
+    name: 'Cars24',
+    sector: 'Automotive',
+    valuation: '$900M',
+    valuationNumber: 0.9,
+    city: 'Gurgaon',
+    foundedYear: 2015,
+    logoUrl: 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=100&h=100&fit=crop',
+    description: 'Used car buying and selling platform.',
+    isUnicorn: false
+  },
+  {
+    id: '8',
     name: 'PharmEasy',
     sector: 'HealthTech',
     valuation: '$800M',
+    valuationNumber: 0.8,
     city: 'Mumbai',
     foundedYear: 2015,
     logoUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=100&h=100&fit=crop',
@@ -96,25 +117,15 @@ const unicornData: UnicornCompany[] = [
     isUnicorn: false
   },
   {
-    id: '8',
+    id: '9',
     name: 'Meesho',
     sector: 'Social Commerce',
     valuation: '$700M',
+    valuationNumber: 0.7,
     city: 'Bangalore',
     foundedYear: 2015,
     logoUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop',
     description: 'Social commerce platform enabling reselling through social media.',
-    isUnicorn: false
-  },
-  {
-    id: '9',
-    name: 'Cars24',
-    sector: 'Automotive',
-    valuation: '$900M',
-    city: 'Gurgaon',
-    foundedYear: 2015,
-    logoUrl: 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=100&h=100&fit=crop',
-    description: 'Used car buying and selling platform.',
     isUnicorn: false
   }
 ];
@@ -122,15 +133,17 @@ const unicornData: UnicornCompany[] = [
 const UnicornsIndia = () => {
   const [filterType, setFilterType] = useState<'all' | 'unicorns' | 'sunicorns'>('all');
 
-  const filteredCompanies = unicornData.filter(company => {
-    if (filterType === 'unicorns') return company.isUnicorn;
-    if (filterType === 'sunicorns') return !company.isUnicorn;
-    return true;
-  });
+  const filteredCompanies = unicornData
+    .filter(company => {
+      if (filterType === 'unicorns') return company.isUnicorn;
+      if (filterType === 'sunicorns') return !company.isUnicorn;
+      return true;
+    })
+    .sort((a, b) => b.valuationNumber - a.valuationNumber); // Sort by valuation descending
 
   return (
     <MainLayout>
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-white mb-2">Indian Startup Ecosystem</h1>
           <p className="text-gray-300">Discover India's most valuable startups and emerging companies</p>
@@ -160,53 +173,80 @@ const UnicornsIndia = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCompanies.map(company => (
-            <Card key={company.id} className="bg-sidebar border-sidebar-border hover:border-sidebar-primary transition-all duration-200">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    {company.logoUrl && (
-                      <img 
-                        src={company.logoUrl} 
-                        alt={`${company.name} logo`} 
-                        className="w-12 h-12 rounded-lg object-cover"
-                      />
-                    )}
-                    <div>
-                      <h3 className="text-lg font-bold text-white">{company.name}</h3>
+        <Card className="bg-sidebar border-sidebar-border">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-sidebar-border hover:bg-sidebar-accent">
+                  <TableHead className="text-white font-semibold">Rank</TableHead>
+                  <TableHead className="text-white font-semibold">Company</TableHead>
+                  <TableHead className="text-white font-semibold">Sector</TableHead>
+                  <TableHead className="text-white font-semibold">Valuation</TableHead>
+                  <TableHead className="text-white font-semibold">Location</TableHead>
+                  <TableHead className="text-white font-semibold">Founded</TableHead>
+                  <TableHead className="text-white font-semibold">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredCompanies.map((company, index) => (
+                  <TableRow key={company.id} className="border-sidebar-border hover:bg-sidebar-accent transition-colors">
+                    <TableCell className="text-gray-300 font-medium">
+                      #{index + 1}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        {company.logoUrl && (
+                          <img 
+                            src={company.logoUrl} 
+                            alt={`${company.name} logo`} 
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        )}
+                        <div>
+                          <div className="font-semibold text-white">{company.name}</div>
+                          <div className="text-xs text-gray-400 line-clamp-1">{company.description}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <span className="text-xs bg-sidebar-accent text-sidebar-accent-foreground px-2 py-1 rounded">
                         {company.sector}
                       </span>
-                    </div>
-                  </div>
-                  {company.isUnicorn && (
-                    <span className="text-xs bg-sidebar-primary text-sidebar-primary-foreground px-2 py-1 rounded font-medium">
-                      🦄 Unicorn
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-sm text-gray-300 mb-4">{company.description}</p>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <TrendingUp size={14} />
-                    <span className="text-sidebar-primary font-medium">{company.valuation}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <MapPin size={14} />
-                    <span>{company.city}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Calendar size={14} />
-                    <span>Founded {company.foundedYear}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-bold text-sidebar-primary text-lg">
+                        {company.valuation}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-gray-300">
+                      <div className="flex items-center gap-1">
+                        <MapPin size={14} />
+                        {company.city}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-gray-300">
+                      <div className="flex items-center gap-1">
+                        <Calendar size={14} />
+                        {company.foundedYear}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {company.isUnicorn ? (
+                        <span className="text-xs bg-sidebar-primary text-sidebar-primary-foreground px-2 py-1 rounded font-medium">
+                          🦄 Unicorn
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-yellow-600 text-yellow-100 px-2 py-1 rounded font-medium">
+                          🌟 Soonicorn
+                        </span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
         {filteredCompanies.length === 0 && (
           <div className="text-center py-12">

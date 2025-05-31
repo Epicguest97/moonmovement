@@ -139,14 +139,14 @@ const Header = () => {
         {/* Actions */}
         <div className="flex items-center space-x-1">
           <Link to="/news" className="mr-2">
-            <Button variant="ghost" size="sm" className="hidden md:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+            <Button variant="ghost" size="sm" className="hidden sm:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
               <Newspaper size={16} className="mr-2" />
               News
             </Button>
           </Link>
           
           <Link to="/unicorns-india" className="mr-2">
-            <Button variant="ghost" size="sm" className="hidden lg:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+            <Button variant="ghost" size="sm" className="hidden sm:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
               <Building2 size={16} className="mr-2" />
               Unicorns
             </Button>
