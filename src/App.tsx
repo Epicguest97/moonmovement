@@ -11,7 +11,8 @@ import Submit from "./pages/Submit";
 import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
 import News from "./pages/News";
-import NewsDetail from "./pages/NewsDetail"; // We'll create this soon
+import NewsDetail from "./pages/NewsDetail";
+import StartupNews from "./pages/StartupNews";
 
 const queryClient = new QueryClient();
 
@@ -22,13 +23,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navigate to="/news" replace />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<Index />} />
           <Route path="/post/:postId" element={<PostDetail />} />
           <Route path="/r/:communityName" element={<Community />} />
           <Route path="/submit" element={<Submit />} />
           <Route path="/user/:username" element={<UserProfile />} />
-          <Route path="/news" element={<News />} />
+          <Route path="/news" element={<StartupNews />} />
           <Route path="/news/:newsId" element={<NewsDetail />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

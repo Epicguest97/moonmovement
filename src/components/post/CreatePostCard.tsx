@@ -9,31 +9,31 @@ import { ImageIcon, LinkIcon } from 'lucide-react';
 
 const CreatePostCard = () => {
   return (
-    <Card className="mb-4 p-2 bg-white">
+    <Card className="mb-4 p-2 bg-sidebar border-sidebar-border">
       <div className="flex items-center">
         <Link to="/profile" className="mr-2">
           <Avatar className="h-8 w-8">
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground">U</AvatarFallback>
           </Avatar>
         </Link>
         
         <Link to="/submit" className="flex-1">
           <Input 
             placeholder="Create Post" 
-            className="bg-gray-100 hover:bg-gray-200 border-gray-200 cursor-pointer"
+            className="bg-sidebar-accent hover:bg-sidebar-border border-sidebar-border cursor-pointer text-sidebar-foreground placeholder:text-gray-400"
             readOnly
           />
         </Link>
         
         <div className="flex ml-2">
           <Link to="/submit?type=image">
-            <Button variant="ghost" size="icon" className="text-gray-500">
+            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-sidebar-primary">
               <ImageIcon size={20} />
             </Button>
           </Link>
           
           <Link to="/submit?type=link">
-            <Button variant="ghost" size="icon" className="text-gray-500">
+            <Button variant="ghost" size="icon" className="text-gray-400 hover:text-sidebar-primary">
               <LinkIcon size={20} />
             </Button>
           </Link>

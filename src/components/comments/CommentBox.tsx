@@ -18,11 +18,11 @@ const CommentBox = ({ onSubmit }: CommentBoxProps) => {
   };
 
   return (
-    <div className="bg-white rounded-md border border-gray-200 p-3 mt-4">
-      <p className="text-sm font-medium mb-2">Comment as <span className="text-reddit-primary">username</span></p>
+    <div className="bg-sidebar rounded-md border border-sidebar-border p-3 mt-4">
+      <p className="text-sm font-medium mb-2 text-sidebar-foreground">Comment as <span className="text-sidebar-primary">username</span></p>
       
       <textarea 
-        className="w-full p-3 border border-gray-300 rounded resize-y min-h-[100px] focus:outline-none focus:ring-1 focus:ring-reddit-primary focus:border-reddit-primary"
+        className="w-full p-3 border border-sidebar-border rounded resize-y min-h-[100px] focus:outline-none focus:ring-1 focus:ring-sidebar-primary focus:border-sidebar-primary bg-sidebar-accent text-sidebar-foreground placeholder:text-gray-400"
         placeholder="What are your thoughts?"
         value={content}
         onChange={(e) => setContent(e.target.value)}
@@ -37,12 +37,12 @@ const CommentBox = ({ onSubmit }: CommentBoxProps) => {
               setIsFocused(false);
               setContent('');
             }}
-            className="mr-2"
+            className="mr-2 text-sidebar-foreground hover:bg-sidebar-accent"
           >
             Cancel
           </Button>
           <Button 
-            className="bg-reddit-primary hover:bg-reddit-hover text-white" 
+            className="bg-sidebar-primary hover:bg-green-600 text-sidebar-primary-foreground" 
             disabled={!content.trim()}
             onClick={handleSubmit}
           >
