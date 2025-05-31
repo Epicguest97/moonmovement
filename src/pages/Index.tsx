@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import CreatePostCard from '@/components/post/CreatePostCard';
@@ -198,28 +197,28 @@ const Index = () => {
         <CreatePostCard />
         
         <Tabs defaultValue="posts" className="mb-4">
-          <TabsList className="bg-white border border-gray-200 rounded-md p-1 h-auto">
+          <TabsList className="bg-sidebar border border-sidebar-border rounded-md p-1 h-auto">
             <TabsTrigger 
               value="posts"
-              className="data-[state=active]:bg-gray-100 py-2 h-auto"
+              className="data-[state=active]:bg-sidebar-accent text-sidebar-foreground py-2 h-auto"
             >
               Posts
             </TabsTrigger>
             <TabsTrigger 
               value="trending"
-              className="data-[state=active]:bg-gray-100 py-2 h-auto"
+              className="data-[state=active]:bg-sidebar-accent text-sidebar-foreground py-2 h-auto"
             >
               Trending
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="posts">
-            <div className="bg-white border border-gray-200 rounded-md mb-4">
+            <div className="bg-sidebar border border-sidebar-border rounded-md mb-4">
               <div className="flex p-2">
                 <Button 
                   variant={sortBy === 'hot' ? 'default' : 'ghost'} 
                   size="sm" 
-                  className={sortBy === 'hot' ? 'bg-gray-100 text-gray-900' : ''}
+                  className={sortBy === 'hot' ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
                   onClick={() => setSortBy('hot')}
                 >
                   <Flame size={16} className="mr-1" />
@@ -228,7 +227,7 @@ const Index = () => {
                 <Button 
                   variant={sortBy === 'new' ? 'default' : 'ghost'} 
                   size="sm" 
-                  className={sortBy === 'new' ? 'bg-gray-100 text-gray-900' : ''}
+                  className={sortBy === 'new' ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
                   onClick={() => setSortBy('new')}
                 >
                   <Clock size={16} className="mr-1" />
@@ -237,7 +236,7 @@ const Index = () => {
                 <Button 
                   variant={sortBy === 'top' ? 'default' : 'ghost'} 
                   size="sm" 
-                  className={sortBy === 'top' ? 'bg-gray-100 text-gray-900' : ''}
+                  className={sortBy === 'top' ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
                   onClick={() => setSortBy('top')}
                 >
                   <TrendingUp size={16} className="mr-1" />
@@ -251,27 +250,27 @@ const Index = () => {
                 <PostCard key={post.id} post={post} />
               ))
             ) : (
-              <div className="bg-white p-8 border border-gray-200 rounded-md text-center">
-                <p className="text-gray-500">No posts match your search.</p>
+              <div className="bg-sidebar p-8 border border-sidebar-border rounded-md text-center">
+                <p className="text-gray-400">No posts match your search.</p>
               </div>
             )}
           </TabsContent>
           
           <TabsContent value="trending">
-            <div className="bg-white border border-gray-200 rounded-md">
-              <h3 className="text-lg font-medium p-4 border-b">Trending Communities</h3>
+            <div className="bg-sidebar border border-sidebar-border rounded-md">
+              <h3 className="text-lg font-medium p-4 border-b border-sidebar-border text-sidebar-foreground">Trending Communities</h3>
               <div className="p-2">
                 {subreddits.slice(0, 5).map((subreddit, index) => (
-                  <div key={subreddit} className="p-2 hover:bg-gray-50 rounded-md">
+                  <div key={subreddit} className="p-2 hover:bg-sidebar-accent rounded-md">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 bg-reddit-primary text-white rounded-full flex items-center justify-center mr-3">
+                      <div className="w-8 h-8 bg-sidebar-primary text-sidebar-primary-foreground rounded-full flex items-center justify-center mr-3">
                         <span className="font-bold">{index + 1}</span>
                       </div>
                       <div>
-                        <a href={`/r/${subreddit}`} className="font-medium hover:underline">
+                        <a href={`/r/${subreddit}`} className="font-medium hover:underline text-sidebar-foreground">
                           r/{subreddit}
                         </a>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-400">
                           {Math.floor(Math.random() * 1000) + 100} members online
                         </p>
                       </div>
