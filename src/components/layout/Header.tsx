@@ -12,6 +12,7 @@ import {
   Menu,
   User,
   Newspaper,
+  Building2,
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -98,6 +99,12 @@ const Header = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link to="/unicorns-india" className="text-gray-300 hover:text-white flex items-center">
+                    <Building2 size={16} className="mr-2" />
+                    Unicorns in India
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link to="/?sort=top" className="text-gray-300 hover:text-white">Popular</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -135,6 +142,13 @@ const Header = () => {
             <Button variant="ghost" size="sm" className="hidden md:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
               <Newspaper size={16} className="mr-2" />
               News
+            </Button>
+          </Link>
+          
+          <Link to="/unicorns-india" className="mr-2">
+            <Button variant="ghost" size="sm" className="hidden lg:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <Building2 size={16} className="mr-2" />
+              Unicorns
             </Button>
           </Link>
           
