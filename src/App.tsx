@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +14,7 @@ import NewsDetail from "./pages/NewsDetail";
 import StartupNews from "./pages/StartupNews";
 import UnicornsIndia from "./pages/UnicornsIndia";
 import StartupDetail from "./pages/StartupDetail";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
