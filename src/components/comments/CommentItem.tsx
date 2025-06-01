@@ -44,22 +44,22 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
       className="comment mt-2 pt-2"
       style={{ marginLeft: depth > 0 ? '16px' : '0' }}
     >
-      <div className={`pl-2 border-l-2 ${depth % maxDepth === 0 ? 'border-sidebar-primary' : 
+      <div className={`pl-2 border-l-2 ${depth % maxDepth === 0 ? 'border-primary' : 
                       depth % maxDepth === 1 ? 'border-blue-500' : 
                       depth % maxDepth === 2 ? 'border-green-500' : 
                       depth % maxDepth === 3 ? 'border-yellow-500' : 
                       'border-purple-500'}`}>
-        <div className="flex items-center text-xs text-gray-400 mb-1">
-          <Link to={`/user/${comment.author}`} className="font-medium text-gray-200 hover:underline mr-1">
+        <div className="flex items-center text-xs text-muted-foreground mb-1">
+          <Link to={`/user/${comment.author}`} className="font-medium text-foreground hover:underline mr-1">
             u/{comment.author}
           </Link>
           <span className="mx-1">•</span>
           <span>{comment.timestamp}</span>
         </div>
         
-        <div className="text-sm mb-2 text-gray-200">{comment.content}</div>
+        <div className="text-sm mb-2 text-foreground">{comment.content}</div>
         
-        <div className="flex items-center text-xs text-gray-400">
+        <div className="flex items-center text-xs text-muted-foreground">
           <div className="mr-2">
             <VoteControls 
               score={voteScore} 
@@ -72,7 +72,7 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex items-center text-xs text-gray-400 p-1 h-auto hover:text-sidebar-primary"
+            className="flex items-center text-xs text-muted-foreground p-1 h-auto hover:text-primary"
             onClick={() => setIsReplying(!isReplying)}
           >
             <MessageSquare size={14} className="mr-1" />
@@ -82,7 +82,7 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex items-center text-xs text-gray-400 ml-1 p-1 h-auto hover:text-sidebar-primary"
+            className="flex items-center text-xs text-muted-foreground ml-1 p-1 h-auto hover:text-primary"
           >
             <Share size={14} className="mr-1" />
             <span>Share</span>
@@ -93,16 +93,16 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="flex items-center text-xs text-gray-400 ml-1 p-1 h-auto hover:text-sidebar-primary"
+                className="flex items-center text-xs text-muted-foreground ml-1 p-1 h-auto hover:text-primary"
               >
                 <MoreHorizontal size={14} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="bg-sidebar border-sidebar-border">
-              <DropdownMenuItem className="text-sidebar-foreground hover:bg-sidebar-accent">Save</DropdownMenuItem>
-              <DropdownMenuItem className="text-sidebar-foreground hover:bg-sidebar-accent">Report</DropdownMenuItem>
-              <DropdownMenuSeparator className="bg-sidebar-border" />
-              <DropdownMenuItem className="text-sidebar-foreground hover:bg-sidebar-accent">Block User</DropdownMenuItem>
+            <DropdownMenuContent align="start" className="bg-card border-border">
+              <DropdownMenuItem className="text-foreground hover:bg-accent">Save</DropdownMenuItem>
+              <DropdownMenuItem className="text-foreground hover:bg-accent">Report</DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuItem className="text-foreground hover:bg-accent">Block User</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -110,19 +110,19 @@ const Comment = ({ comment, depth = 0 }: CommentProps) => {
         {isReplying && (
           <div className="mt-2 mb-4">
             <textarea 
-              className="w-full p-2 border border-sidebar-border rounded resize-y min-h-[100px] bg-sidebar-accent text-sidebar-foreground placeholder:text-gray-400"
+              className="w-full p-2 border border-border rounded resize-y min-h-[100px] bg-background text-foreground placeholder:text-muted-foreground"
               placeholder="What are your thoughts?"
             />
             <div className="flex justify-end mt-1">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="mr-2 text-sidebar-foreground hover:bg-sidebar-accent"
+                className="mr-2 text-foreground hover:bg-accent"
                 onClick={() => setIsReplying(false)}
               >
                 Cancel
               </Button>
-              <Button size="sm" className="bg-sidebar-primary hover:bg-green-600 text-sidebar-primary-foreground">
+              <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 Reply
               </Button>
             </div>

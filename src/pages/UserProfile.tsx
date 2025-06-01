@@ -4,8 +4,11 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Calendar, Cake, Mail, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Calendar, Cake, Mail, MapPin, Camera, Edit3 } from 'lucide-react';
 import PostCard, { Post } from '@/components/post/PostCard';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Mock user data
 const mockUsers: Record<string, {
@@ -176,20 +179,47 @@ const mockComments = [
 const UserProfile = () => {
   const { username = 'me' } = useParams<{ username: string }>();
   const [activeTab, setActiveTab] = useState<string>('posts');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profilePicUrl, setProfilePicUrl] = useState('');
+  const { user: currentUser, isLoggedIn } = useAuth();
   
-  // Get user data or show not found
-  const userData = mockUsers[username];
+  // Check if this is the current user's profile
+  const isCurrentUser = isLoggedIn && currentUser?.username === username;
+  
+  // Get user data - prioritize current user data if viewing own profile
+  let userData;
+  if (isCurrentUser && currentUser) {
+    // Use actual user data from auth context
+    userData = {
+      username: currentUser.username,
+      displayName: currentUser.username,
+      karma: 4782, // This would come from backend in real app
+      cakeDay: 'Recently joined',
+      bio: 'Welcome to my profile!',
+      email: currentUser.email,
+      avatarColor: 'bg-blue-500',
+      bannerColor: 'bg-blue-100'
+    };
+  } else {
+    // Use mock data for other users
+    userData = mockUsers[username];
+  }
   
   // Filter posts by this user
   const userPosts = mockPosts.filter(post => post.author === username);
+  
+  const handleProfilePicUpload = () => {
+    // For now, just simulate uploading with a placeholder
+    setProfilePicUrl('https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=100&h=100&fit=crop&crop=face');
+  };
   
   if (!userData) {
     return (
       <MainLayout>
         <div className="max-w-3xl mx-auto p-4">
-          <div className="bg-white p-10 rounded-md border border-gray-200 text-center">
-            <h2 className="text-2xl font-bold mb-2">User Not Found</h2>
-            <p className="text-gray-600">
+          <div className="bg-card p-10 rounded-md border border-border text-center">
+            <h2 className="text-2xl font-bold mb-2 text-foreground">User Not Found</h2>
+            <p className="text-muted-foreground">
               The user u/{username} doesn't exist or has deleted their account.
             </p>
           </div>
@@ -204,35 +234,119 @@ const UserProfile = () => {
       
       <div className="max-w-3xl mx-auto px-4">
         <div className="relative -mt-16 mb-4">
-          <Avatar className="h-24 w-24 border-4 border-white">
-            <AvatarFallback className={`text-2xl ${userData.avatarColor} text-white`}>
-              {userData.displayName.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-24 w-24 border-4 border-background">
+              <AvatarFallback className={`text-2xl ${userData.avatarColor} text-white`}>
+                {profilePicUrl ? (
+                  <img src={profilePicUrl} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  userData.displayName.charAt(0).toUpperCase()
+                )}
+              </AvatarFallback>
+            </Avatar>
+            
+            {isCurrentUser && (
+              <Button
+                size="icon"
+                variant="secondary"
+                className="absolute bottom-0 right-0 h-6 w-6 rounded-full"
+                onClick={handleProfilePicUpload}
+              >
+                <Camera size={12} />
+              </Button>
+            )}
+          </div>
         </div>
         
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">{userData.displayName}</h1>
-          <p className="text-sm text-gray-500">u/{userData.username}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">{userData.displayName}</h1>
+              <p className="text-sm text-muted-foreground">u/{userData.username}</p>
+              {isCurrentUser && (
+                <p className="text-xs text-primary mt-1">This is your profile</p>
+              )}
+            </div>
+            
+            {isCurrentUser && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditingProfile(!isEditingProfile)}
+                className="flex items-center"
+              >
+                <Edit3 size={16} className="mr-2" />
+                Edit Profile
+              </Button>
+            )}
+          </div>
+          
+          {isEditingProfile && isCurrentUser && (
+            <Card className="mt-4 bg-card border-border">
+              <CardContent className="p-4">
+                <h3 className="font-medium mb-3 text-foreground">Edit Profile</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-foreground">Display Name</label>
+                    <Input 
+                      defaultValue={userData.displayName} 
+                      className="mt-1 bg-background border-border text-foreground"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground">Bio</label>
+                    <Input 
+                      defaultValue={userData.bio} 
+                      className="mt-1 bg-background border-border text-foreground"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground">Location</label>
+                    <Input 
+                      defaultValue={userData.location} 
+                      className="mt-1 bg-background border-border text-foreground"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground">Profile Picture URL</label>
+                    <Input 
+                      placeholder="Enter image URL"
+                      value={profilePicUrl}
+                      onChange={(e) => setProfilePicUrl(e.target.value)}
+                      className="mt-1 bg-background border-border text-foreground"
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" size="sm" onClick={() => setIsEditingProfile(false)}>
+                      Cancel
+                    </Button>
+                    <Button size="sm" onClick={() => setIsEditingProfile(false)}>
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           
           <div className="flex flex-wrap gap-2 mt-2">
-            <div className="flex items-center text-sm text-gray-600">
+            <div className="flex items-center text-sm text-muted-foreground">
               <Cake size={16} className="mr-1" />
               <span>Cake day: {userData.cakeDay}</span>
             </div>
-            <div className="flex items-center text-sm text-gray-600 ml-4">
+            <div className="flex items-center text-sm text-muted-foreground ml-4">
               <span>Karma: {userData.karma.toLocaleString()}</span>
             </div>
             
             {userData.location && (
-              <div className="flex items-center text-sm text-gray-600 ml-4">
+              <div className="flex items-center text-sm text-muted-foreground ml-4">
                 <MapPin size={16} className="mr-1" />
                 <span>{userData.location}</span>
               </div>
             )}
             
-            {userData.email && (
-              <div className="flex items-center text-sm text-gray-600 ml-4">
+            {userData.email && isCurrentUser && (
+              <div className="flex items-center text-sm text-muted-foreground ml-4">
                 <Mail size={16} className="mr-1" />
                 <span>{userData.email}</span>
               </div>
@@ -240,27 +354,27 @@ const UserProfile = () => {
           </div>
           
           {userData.bio && (
-            <p className="mt-4 text-sm">{userData.bio}</p>
+            <p className="mt-4 text-sm text-foreground">{userData.bio}</p>
           )}
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-          <TabsList className="bg-white border border-gray-200 rounded-md p-1 h-auto">
+          <TabsList className="bg-card border border-border rounded-md p-1 h-auto">
             <TabsTrigger 
               value="posts"
-              className="data-[state=active]:bg-gray-100 py-2 h-auto"
+              className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground py-2 h-auto text-foreground"
             >
               Posts
             </TabsTrigger>
             <TabsTrigger 
               value="comments"
-              className="data-[state=active]:bg-gray-100 py-2 h-auto"
+              className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground py-2 h-auto text-foreground"
             >
               Comments
             </TabsTrigger>
             <TabsTrigger 
               value="about"
-              className="data-[state=active]:bg-gray-100 py-2 h-auto"
+              className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground py-2 h-auto text-foreground"
             >
               About
             </TabsTrigger>
@@ -272,64 +386,81 @@ const UserProfile = () => {
                 <PostCard key={post.id} post={post} />
               ))
             ) : (
-              <div className="bg-white p-8 border border-gray-200 rounded-md text-center">
-                <p className="text-gray-500">No posts yet.</p>
+              <div className="bg-card p-8 border border-border rounded-md text-center">
+                <p className="text-muted-foreground">
+                  {isCurrentUser ? "You haven't posted anything yet." : "No posts yet."}
+                </p>
               </div>
             )}
           </TabsContent>
           
           <TabsContent value="comments">
             {mockComments.map(comment => (
-              <Card key={comment.id} className="mb-3">
+              <Card key={comment.id} className="mb-3 bg-card border-border">
                 <CardContent className="p-4">
-                  <div className="text-xs text-gray-500 mb-1">
-                    <span className="font-medium text-black">{userData.username}</span> commented on{" "}
-                    <a href={`/post/${comment.postId}`} className="text-blue-600 hover:underline">
+                  <div className="text-xs text-muted-foreground mb-1">
+                    <span className="font-medium text-foreground">{userData.username}</span> commented on{" "}
+                    <a href={`/post/${comment.postId}`} className="text-primary hover:underline">
                       {comment.postTitle}
                     </a>{" "}
                     in{" "}
-                    <a href={`/r/${comment.subreddit}`} className="text-black hover:underline">
+                    <a href={`/r/${comment.subreddit}`} className="text-foreground hover:underline">
                       r/{comment.subreddit}
                     </a>
                     <span className="mx-1">•</span>
                     <span>{comment.timestamp}</span>
                   </div>
                   
-                  <p className="text-sm">{comment.content}</p>
+                  <p className="text-sm text-foreground">{comment.content}</p>
                 </CardContent>
               </Card>
             ))}
           </TabsContent>
           
           <TabsContent value="about">
-            <Card>
+            <Card className="bg-card border-border">
               <CardContent className="p-4">
                 <div className="space-y-4">
+                  {isCurrentUser && (
+                    <div className="bg-primary/10 border border-primary/20 p-3 rounded-md">
+                      <h3 className="font-medium text-primary mb-1">Your Account</h3>
+                      <p className="text-sm text-muted-foreground">
+                        This is your personal profile. Other users can see your public posts and comments.
+                      </p>
+                    </div>
+                  )}
+                  
                   <div>
-                    <h3 className="font-medium mb-1">Trophy Case</h3>
+                    <h3 className="font-medium mb-1 text-foreground">Trophy Case</h3>
                     <div className="flex gap-2 flex-wrap">
-                      <div className="bg-yellow-100 border border-yellow-200 p-2 rounded-md text-sm">
+                      <div className="bg-yellow-100 border border-yellow-200 p-2 rounded-md text-sm text-yellow-800">
                         1 Year Club
                       </div>
-                      <div className="bg-blue-100 border border-blue-200 p-2 rounded-md text-sm">
+                      <div className="bg-blue-100 border border-blue-200 p-2 rounded-md text-sm text-blue-800">
                         Helpful Award
                       </div>
-                      <div className="bg-green-100 border border-green-200 p-2 rounded-md text-sm">
+                      <div className="bg-green-100 border border-green-200 p-2 rounded-md text-sm text-green-800">
                         Popular Post
                       </div>
                     </div>
                   </div>
                   
                   <div>
-                    <h3 className="font-medium mb-1">Account Details</h3>
+                    <h3 className="font-medium mb-1 text-foreground">Account Details</h3>
                     <div className="space-y-2">
                       <div className="flex items-center">
-                        <Calendar size={16} className="mr-2" />
-                        <span className="text-sm">Joined {userData.cakeDay}</span>
+                        <Calendar size={16} className="mr-2 text-muted-foreground" />
+                        <span className="text-sm text-foreground">Joined {userData.cakeDay}</span>
                       </div>
                       <div className="flex items-center">
-                        <span className="text-sm">Total Karma: {userData.karma.toLocaleString()}</span>
+                        <span className="text-sm text-foreground">Total Karma: {userData.karma.toLocaleString()}</span>
                       </div>
+                      {isCurrentUser && (
+                        <div className="flex items-center">
+                          <Mail size={16} className="mr-2 text-muted-foreground" />
+                          <span className="text-sm text-foreground">Email: {userData.email}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
