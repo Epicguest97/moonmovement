@@ -22,11 +22,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Header = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { isLoggedIn, user, logout } = useAuth();
 
   // Communities for dropdown
   const topCommunities = [
@@ -51,9 +52,10 @@ const Header = () => {
     }
   };
 
-  // Toggle login state (just for demo)
-  const toggleLogin = () => {
-    setIsLoggedIn(!isLoggedIn);
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   return (
@@ -174,15 +176,17 @@ const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-sidebar border-sidebar-border">
-                  <DropdownMenuLabel className="text-white">My Account</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-white">
+                    {user?.username || 'My Account'}
+                  </DropdownMenuLabel>
                   <DropdownMenuItem asChild>
-                    <Link to="/user/me" className="text-gray-300 hover:text-white">Profile</Link>
+                    <Link to={`/user/${user?.username}`} className="text-gray-300 hover:text-white">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/settings" className="text-gray-300 hover:text-white">Settings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-sidebar-border" />
-                  <DropdownMenuItem onClick={toggleLogin} className="text-gray-300 hover:text-white">Logout</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="text-gray-300 hover:text-white">Logout</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
