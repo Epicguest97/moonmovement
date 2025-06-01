@@ -42,7 +42,7 @@ const PostCard = ({ post }: PostCardProps) => {
   };
   
   return (
-    <Card className="overflow-hidden mb-4 bg-sidebar border-sidebar-border hover:border-sidebar-primary transition-all duration-200">
+    <Card className="post-card overflow-hidden mb-4 bg-card border-border">
       <div className="flex">
         <VoteControls 
           score={post.voteScore} 
@@ -51,13 +51,13 @@ const PostCard = ({ post }: PostCardProps) => {
         />
         
         <div className="flex-1 p-4">
-          <div className="flex items-center text-xs text-gray-400 mb-2">
-            <Link to={`/r/${post.subreddit}`} className="font-medium text-gray-200 hover:underline mr-1">
+          <div className="flex items-center text-xs text-muted-foreground mb-2">
+            <Link to={`/r/${post.subreddit}`} className="font-medium text-foreground hover:underline mr-1">
               r/{post.subreddit}
             </Link>
             <span className="mx-1">•</span>
             Posted by{" "}
-            <Link to={`/user/${authorName}`} className="hover:underline mx-1 text-gray-400">
+            <Link to={`/user/${authorName}`} className="hover:underline mx-1 text-muted-foreground">
               u/{authorName}
             </Link>
             <span className="mx-1">•</span>
@@ -65,23 +65,23 @@ const PostCard = ({ post }: PostCardProps) => {
           </div>
           
           <Link to={`/post/${post.id}`}>
-            <h3 className="text-lg font-semibold mb-2 text-white hover:text-sidebar-primary cursor-pointer">
+            <h3 className="text-lg font-semibold mb-2 text-foreground hover:text-primary cursor-pointer">
               {post.title}
             </h3>
           </Link>
           
           <PostContent post={post} />
           
-          <div className="flex items-center mt-3 text-xs text-gray-400">
+          <div className="flex items-center mt-3 text-xs text-muted-foreground">
             <Link 
               to={`/post/${post.id}`}
-              className="flex items-center hover:bg-sidebar-accent rounded p-1 -ml-1"
+              className="flex items-center hover:bg-accent hover:text-accent-foreground rounded p-1 -ml-1"
             >
               <MessageSquare size={16} className="mr-1" />
               {post.commentCount} Comments
             </Link>
             
-            <button className="flex items-center hover:bg-sidebar-accent rounded p-1 ml-2">
+            <button className="flex items-center hover:bg-accent hover:text-accent-foreground rounded p-1 ml-2">
               <Share size={16} className="mr-1" />
               Share
             </button>
