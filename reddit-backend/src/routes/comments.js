@@ -9,6 +9,23 @@ router.get('/', (req, res) => {
   res.json(comments);
 });
 
+// POST a new comment
+router.post('/', (req, res) => {
+  const { content, author, postId, parentId } = req.body;
+  const newComment = {
+    id: (Date.now() + Math.random()).toString(),
+    content,
+    author: author || 'anonymous',
+    postId,
+    parentId: parentId || null,
+    timestamp: new Date().toISOString(),
+    voteScore: 1,
+    replies: []
+  };
+  comments.unshift(newComment);
+  res.status(201).json(newComment);
+});
+
 // PUT (update) a comment by id
 router.put('/:id', (req, res) => {
   const { id } = req.params;

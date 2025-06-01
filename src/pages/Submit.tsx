@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -22,12 +21,26 @@ const Submit = () => {
   const [selectedCommunity, setSelectedCommunity] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would send the post to your backend here
-    console.log('Post submitted:', { title, content, imageUrl, linkUrl, selectedCommunity });
-    // For now, just navigate back to the homepage
-    navigate('/');
+    const postData = {
+      title,
+      content,
+      subreddit: selectedCommunity,
+      imageUrl,
+      linkUrl,
+      author: 'currentUser', // Replace with real user if available
+    };
+    try {
+      await fetch('/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData),
+      });
+      navigate('/');
+    } catch (err) {
+      alert('Failed to submit post');
+    }
   };
 
   return (

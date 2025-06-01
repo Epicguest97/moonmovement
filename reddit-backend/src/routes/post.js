@@ -9,6 +9,27 @@ router.get('/', (req, res) => {
   res.json(posts);
 });
 
+// POST a new post
+router.post('/', (req, res) => {
+  const { title, content, subreddit, author, imageUrl, linkUrl } = req.body;
+  const newPost = {
+    id: (Date.now() + Math.random()).toString(),
+    title,
+    content,
+    subreddit,
+    author: author || 'anonymous',
+    timestamp: new Date().toISOString(),
+    voteScore: 1,
+    commentCount: 0,
+    imageUrl,
+    linkUrl,
+    isText: !!content,
+    isLink: !!linkUrl
+  };
+  posts.unshift(newPost);
+  res.status(201).json(newPost);
+});
+
 // PUT (update) a post by id
 router.put('/:id', (req, res) => {
   const { id } = req.params;

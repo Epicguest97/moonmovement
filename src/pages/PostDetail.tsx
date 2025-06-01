@@ -56,26 +56,25 @@ const PostDetail = () => {
     }
   };
   
-  const handleCommentSubmit = (commentText: string) => {
+  const handleCommentSubmit = async (commentText: string) => {
     if (!commentText.trim() || !post) return;
-    
-    // Create new comment
-    const newComment: CommentType = {
-      id: `new-${Date.now()}`,
-      author: 'currentUser',
+    const commentData = {
       content: commentText,
-      timestamp: 'Just now',
-      voteScore: 1,
+      author: 'currentUser', // Replace with real user if available
+      postId: post.id,
     };
-    
-    // Add to comments
-    setComments([newComment, ...comments]);
-    
-    // Update comment count on post
-    setPost({
-      ...post,
-      commentCount: post.commentCount + 1
-    });
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(commentData),
+      });
+      const newComment = await res.json();
+      setComments([newComment, ...comments]);
+      setPost({ ...post, commentCount: post.commentCount + 1 });
+    } catch (err) {
+      alert('Failed to submit comment');
+    }
   };
   
   if (!post) {
