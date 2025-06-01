@@ -24,6 +24,8 @@ export interface Post {
   imageUrl?: string;
   videoUrl?: string;
   linkUrl?: string;
+  isText?: boolean;
+  isLink?: boolean;
 }
 
 interface PostCardProps {
@@ -34,10 +36,19 @@ const PostCard = ({ post }: PostCardProps) => {
   // Handle both author object and string formats
   const authorName = typeof post.author === 'string' ? post.author : post.author.username;
   
+  // Mock vote handling for now
+  const handleVote = (direction: 'up' | 'down') => {
+    console.log('Vote:', direction, 'on post:', post.id);
+  };
+  
   return (
     <Card className="overflow-hidden mb-4 bg-sidebar border-sidebar-border hover:border-sidebar-primary transition-all duration-200">
       <div className="flex">
-        <VoteControls score={post.voteScore} />
+        <VoteControls 
+          score={post.voteScore} 
+          voteStatus={null} 
+          onVote={handleVote} 
+        />
         
         <div className="flex-1 p-4">
           <div className="flex items-center text-xs text-gray-400 mb-2">

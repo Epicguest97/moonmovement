@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -94,6 +93,7 @@ const mockPosts: Post[] = [
     timestamp: '5 hours ago',
     voteScore: 4321,
     commentCount: 932,
+    isText: true,
   },
   {
     id: '2',
@@ -105,7 +105,6 @@ const mockPosts: Post[] = [
     voteScore: 2156,
     commentCount: 87,
     imageUrl: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&h=350&fit=crop',
-    isText: false,
   },
   {
     id: '3',
@@ -140,7 +139,6 @@ const mockPosts: Post[] = [
     voteScore: 8721,
     commentCount: 324,
     imageUrl: 'https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=500&h=350&fit=crop',
-    isText: false,
   },
 ];
 
