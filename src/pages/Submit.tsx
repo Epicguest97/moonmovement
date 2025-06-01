@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,15 +21,28 @@ const Submit = () => {
   const [selectedCommunity, setSelectedCommunity] = useState('');
   const navigate = useNavigate();
 
+  const username = localStorage.getItem('username');
+
+  useEffect(() => {
+    if (!username) {
+      navigate('/auth');
+    }
+  }, [username, navigate]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!username) {
+      alert('You must be signed in to create a post.');
+      navigate('/auth');
+      return;
+    }
     const postData = {
       title,
       content,
       subreddit: selectedCommunity,
       imageUrl,
       linkUrl,
-      author: 'currentUser', // Replace with real user if available
+      author: username, // Use the logged-in username
     };
     try {
       await fetch('https://moonmovement.onrender.com/api/posts', {
@@ -42,6 +55,8 @@ const Submit = () => {
       alert('Failed to submit post');
     }
   };
+
+  if (!username) return null;
 
   return (
     <MainLayout>

@@ -34,7 +34,7 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Signup failed');
-      // Optionally store token: localStorage.setItem('token', data.token);
+      localStorage.setItem('username', data.user.username);
       navigate('/home');
     } catch (err: any) {
       setError(err.message);
