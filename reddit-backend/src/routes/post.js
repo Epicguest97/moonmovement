@@ -1,45 +1,53 @@
 const express = require('express');
 const router = express.Router();
-
-// In-memory posts data
-let posts = [];
+const prisma = require('../utils/prisma');
 
 // GET all posts
-router.get('/', (req, res) => {
-  res.json(posts);
+router.get('/', async (req, res) => {
+  try {
+    const posts = await prisma.post.findMany({
+      include: { author: true, comments: true, votes: true },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(posts);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch posts' });
+  }
 });
 
 // POST a new post
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const { title, content, subreddit, author, imageUrl, linkUrl } = req.body;
-  const newPost = {
-    id: (Date.now() + Math.random()).toString(),
-    title,
-    content,
-    subreddit,
-    author: author || 'anonymous',
-    timestamp: new Date().toISOString(),
-    voteScore: 1,
-    commentCount: 0,
-    imageUrl,
-    linkUrl,
-    isText: !!content,
-    isLink: !!linkUrl
-  };
-  posts.unshift(newPost);
-  res.status(201).json(newPost);
+  try {
+    const user = await prisma.user.findUnique({ where: { username: author } });
+    if (!user) return res.status(400).json({ error: 'Author not found' });
+    const newPost = await prisma.post.create({
+      data: {
+        title,
+        content,
+        authorId: user.id,
+        // subreddit, imageUrl, linkUrl fields would need to be added to the Prisma schema if you want to store them
+      },
+      include: { author: true, comments: true, votes: true }
+    });
+    res.status(201).json(newPost);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create post' });
+  }
 });
 
 // PUT (update) a post by id
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { title, content } = req.body;
-  const post = posts.find(p => p.id === id);
-  if (post) {
-    post.title = title || post.title;
-    post.content = content || post.content;
-    res.json(post);
-  } else {
+  try {
+    const updated = await prisma.post.update({
+      where: { id: Number(id) },
+      data: { title, content },
+      include: { author: true, comments: true, votes: true }
+    });
+    res.json(updated);
+  } catch (err) {
     res.status(404).json({ error: 'Post not found' });
   }
 });
