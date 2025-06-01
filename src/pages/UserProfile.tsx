@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Calendar, Cake, Mail, MapPin } from 'lucide-react';
 import PostCard, { Post } from '@/components/post/PostCard';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Mock user data
 const mockUsers: Record<string, {
@@ -176,9 +177,29 @@ const mockComments = [
 const UserProfile = () => {
   const { username = 'me' } = useParams<{ username: string }>();
   const [activeTab, setActiveTab] = useState<string>('posts');
+  const { user: currentUser, isLoggedIn } = useAuth();
   
-  // Get user data or show not found
-  const userData = mockUsers[username];
+  // Check if this is the current user's profile
+  const isCurrentUser = isLoggedIn && currentUser?.username === username;
+  
+  // Get user data - prioritize current user data if viewing own profile
+  let userData;
+  if (isCurrentUser && currentUser) {
+    // Use actual user data from auth context
+    userData = {
+      username: currentUser.username,
+      displayName: currentUser.username,
+      karma: 4782, // This would come from backend in real app
+      cakeDay: 'Recently joined',
+      bio: 'Welcome to my profile!',
+      email: currentUser.email,
+      avatarColor: 'bg-blue-500',
+      bannerColor: 'bg-blue-100'
+    };
+  } else {
+    // Use mock data for other users
+    userData = mockUsers[username];
+  }
   
   // Filter posts by this user
   const userPosts = mockPosts.filter(post => post.author === username);
@@ -206,7 +227,7 @@ const UserProfile = () => {
         <div className="relative -mt-16 mb-4">
           <Avatar className="h-24 w-24 border-4 border-white">
             <AvatarFallback className={`text-2xl ${userData.avatarColor} text-white`}>
-              {userData.displayName.charAt(0)}
+              {userData.displayName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </div>
@@ -214,6 +235,9 @@ const UserProfile = () => {
         <div className="mb-6">
           <h1 className="text-2xl font-bold">{userData.displayName}</h1>
           <p className="text-sm text-gray-500">u/{userData.username}</p>
+          {isCurrentUser && (
+            <p className="text-xs text-green-600 mt-1">This is your profile</p>
+          )}
           
           <div className="flex flex-wrap gap-2 mt-2">
             <div className="flex items-center text-sm text-gray-600">
@@ -231,7 +255,7 @@ const UserProfile = () => {
               </div>
             )}
             
-            {userData.email && (
+            {userData.email && isCurrentUser && (
               <div className="flex items-center text-sm text-gray-600 ml-4">
                 <Mail size={16} className="mr-1" />
                 <span>{userData.email}</span>
@@ -273,7 +297,9 @@ const UserProfile = () => {
               ))
             ) : (
               <div className="bg-white p-8 border border-gray-200 rounded-md text-center">
-                <p className="text-gray-500">No posts yet.</p>
+                <p className="text-gray-500">
+                  {isCurrentUser ? "You haven't posted anything yet." : "No posts yet."}
+                </p>
               </div>
             )}
           </TabsContent>
@@ -305,6 +331,15 @@ const UserProfile = () => {
             <Card>
               <CardContent className="p-4">
                 <div className="space-y-4">
+                  {isCurrentUser && (
+                    <div className="bg-blue-50 border border-blue-200 p-3 rounded-md">
+                      <h3 className="font-medium text-blue-800 mb-1">Your Account</h3>
+                      <p className="text-sm text-blue-700">
+                        This is your personal profile. Other users can see your public posts and comments.
+                      </p>
+                    </div>
+                  )}
+                  
                   <div>
                     <h3 className="font-medium mb-1">Trophy Case</h3>
                     <div className="flex gap-2 flex-wrap">
@@ -330,6 +365,12 @@ const UserProfile = () => {
                       <div className="flex items-center">
                         <span className="text-sm">Total Karma: {userData.karma.toLocaleString()}</span>
                       </div>
+                      {isCurrentUser && (
+                        <div className="flex items-center">
+                          <Mail size={16} className="mr-2" />
+                          <span className="text-sm">Email: {userData.email}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

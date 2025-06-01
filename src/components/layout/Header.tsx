@@ -180,7 +180,7 @@ const Header = () => {
                     {user?.username || 'My Account'}
                   </DropdownMenuLabel>
                   <DropdownMenuItem asChild>
-                    <Link to={`/user/${user?.username}`} className="text-gray-300 hover:text-white">Profile</Link>
+                    <Link to={`/user/${user?.username}`} className="text-gray-300 hover:text-white">My Account</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/settings" className="text-gray-300 hover:text-white">Settings</Link>
