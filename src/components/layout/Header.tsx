@@ -188,21 +188,23 @@ const Header = () => {
             </>
           ) : (
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="hidden md:flex border-sidebar-border bg-transparent text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                onClick={toggleLogin}
-              >
-                Log In
-              </Button>
-              <Button 
-                size="sm" 
-                className="bg-sidebar-primary hover:bg-sidebar-primary/90 text-white"
-                onClick={toggleLogin}
-              >
-                Sign Up
-              </Button>
+              <Link to="/auth">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="hidden md:flex border-sidebar-border bg-transparent text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                >
+                  Log In
+                </Button>
+              </Link>
+              <Link to="/auth">
+                <Button 
+                  size="sm" 
+                  className="bg-sidebar-primary hover:bg-sidebar-primary/90 text-white"
+                >
+                  Sign Up
+                </Button>
+              </Link>
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -211,8 +213,12 @@ const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-sidebar border-sidebar-border">
-                  <DropdownMenuItem onClick={toggleLogin} className="text-gray-300 hover:text-white">Log In</DropdownMenuItem>
-                  <DropdownMenuItem onClick={toggleLogin} className="text-gray-300 hover:text-white">Sign Up</DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/auth" className="text-gray-300 hover:text-white">Log In</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/auth" className="text-gray-300 hover:text-white">Sign Up</Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

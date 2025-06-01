@@ -35,6 +35,7 @@ const App = () => (
           <Route path="/news/:newsId" element={<NewsDetail />} />
           <Route path="/unicorns-india" element={<UnicornsIndia />} />
           <Route path="/startup/:startupId" element={<StartupDetail />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
