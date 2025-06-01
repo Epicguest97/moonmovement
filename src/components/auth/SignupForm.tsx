@@ -1,5 +1,5 @@
-
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,24 +15,32 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setError('');
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
-    
     setIsLoading(true);
-    
-    // TODO: Add authentication endpoint call here
-    console.log('Signup attempt:', { username, email, password });
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const res = await fetch('http://localhost:8080/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Signup failed');
+      // Optionally store token: localStorage.setItem('token', data.token);
+      navigate('/home');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -96,6 +104,8 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
               className="bg-sidebar-accent border-sidebar-border text-white"
             />
           </div>
+
+          {error && <div className="text-red-500 text-sm">{error}</div>}
           
           <Button 
             type="submit" 
