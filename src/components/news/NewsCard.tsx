@@ -47,8 +47,8 @@ const NewsCard = ({ news }: NewsCardProps) => {
             <span className="text-gray-500">{news.source}</span>
           </div>
           
-          <Link to={`/news/${news.id}`}>
-            <h3 className="text-lg font-bold mb-2 text-white hover:text-sidebar-primary cursor-pointer">
+          <Link to={`/news/${news.id}`} className="block">
+            <h3 className="text-lg font-bold mb-2 text-white hover:text-sidebar-primary cursor-pointer transition-colors">
               {news.title}
             </h3>
           </Link>

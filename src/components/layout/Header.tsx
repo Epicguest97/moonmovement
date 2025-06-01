@@ -65,9 +65,9 @@ const Header = () => {
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
             <div className="bg-sidebar-primary text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
-              <span className="font-bold text-lg">R</span>
+              <span className="font-bold text-lg">M</span>
             </div>
-            <span className="text-xl font-bold hidden md:block text-white">reeddit</span>
+            <span className="text-xl font-bold hidden md:block text-white">moonmovemt</span>
           </Link>
           
           <div className="ml-2 md:ml-4">
@@ -130,7 +130,7 @@ const Header = () => {
             <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <Input 
               type="text" 
-              placeholder="Search Reeddit" 
+              placeholder="Search Moonmovemt" 
               className="pl-10 bg-sidebar-accent border-sidebar-border focus:bg-sidebar text-white w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
