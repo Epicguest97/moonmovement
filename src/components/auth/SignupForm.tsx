@@ -27,7 +27,7 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
     }
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:8080/api/signup', {
+      const res = await fetch('https://moonmovement.onrender.com/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password })
