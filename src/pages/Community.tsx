@@ -19,7 +19,7 @@ const Community = () => {
   
   useEffect(() => {
     if (communityName) {
-      fetch('/api/posts')
+      fetch('https://moonmovement.onrender.com/api/posts')
         .then(res => res.json())
         .then(data => {
           const filtered = data.filter((post: Post) => post.subreddit.toLowerCase() === communityName.toLowerCase());

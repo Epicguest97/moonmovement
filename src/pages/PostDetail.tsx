@@ -23,7 +23,7 @@ const PostDetail = () => {
   
   useEffect(() => {
     if (postId) {
-      fetch('/api/posts')
+      fetch('https://moonmovement.onrender.com/api/posts')
         .then(res => res.json())
         .then(data => {
           const foundPost = data.find((p: Post) => p.id === postId);
@@ -32,7 +32,7 @@ const PostDetail = () => {
             setVoteScore(foundPost.voteScore);
           }
         });
-      fetch('/api/comments')
+      fetch('https://moonmovement.onrender.com/api/comments')
         .then(res => res.json())
         .then(data => {
           // If you want to filter comments by postId, you need to store postId in each comment
@@ -64,7 +64,7 @@ const PostDetail = () => {
       postId: post.id,
     };
     try {
-      const res = await fetch('/api/comments', {
+      const res = await fetch('https://moonmovement.onrender.com/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(commentData),

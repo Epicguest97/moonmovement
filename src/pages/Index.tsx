@@ -12,7 +12,7 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
-    fetch('/api/posts')
+    fetch('https://moonmovement.onrender.com/api/posts')
       .then(res => res.json())
       .then(data => setPosts(data))
       .catch(() => setPosts([]));

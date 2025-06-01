@@ -32,7 +32,7 @@ const Submit = () => {
       author: 'currentUser', // Replace with real user if available
     };
     try {
-      await fetch('/api/posts', {
+      await fetch('https://moonmovement.onrender.com/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData),
