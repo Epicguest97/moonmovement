@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -26,17 +27,33 @@ const PostDetail = () => {
       fetch('https://moonmovement.onrender.com/api/posts')
         .then(res => res.json())
         .then(data => {
-          const foundPost = data.find((p: Post) => p.id === postId);
+          console.log('PostDetail API Response:', data);
+          const foundPost = data.find((p: any) => p.id.toString() === postId);
           if (foundPost) {
-            setPost(foundPost);
-            setVoteScore(foundPost.voteScore);
+            const transformedPost = {
+              ...foundPost,
+              id: foundPost.id.toString(),
+              voteScore: foundPost.votes?.length || 0,
+              commentCount: foundPost.comments?.length || 0,
+              timestamp: new Date(foundPost.createdAt).toLocaleString(),
+              subreddit: foundPost.subreddit || 'general'
+            };
+            setPost(transformedPost);
+            setVoteScore(transformedPost.voteScore);
           }
+        })
+        .catch((error) => {
+          console.error('Failed to fetch post:', error);
         });
+      
       fetch('https://moonmovement.onrender.com/api/comments')
         .then(res => res.json())
         .then(data => {
           // If you want to filter comments by postId, you need to store postId in each comment
           setComments(data.filter((c: any) => c.postId === postId));
+        })
+        .catch((error) => {
+          console.error('Failed to fetch comments:', error);
         });
     }
   }, [postId]);
@@ -99,6 +116,7 @@ const PostDetail = () => {
   }
   
   const subreddit = subreddits[post.subreddit] || null;
+  const authorName = typeof post.author === 'string' ? post.author : post.author.username;
   
   return (
     <MainLayout>
@@ -118,8 +136,8 @@ const PostDetail = () => {
                 </Link>
                 <span className="mx-1">•</span>
                 Posted by{" "}
-                <Link to={`/user/${post.author}`} className="hover:underline mx-1 text-gray-400">
-                  u/{post.author}
+                <Link to={`/user/${authorName}`} className="hover:underline mx-1 text-gray-400">
+                  u/{authorName}
                 </Link>
                 <span className="mx-1">•</span>
                 <span>{post.timestamp}</span>

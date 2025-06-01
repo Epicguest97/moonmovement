@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import CreatePostCard from '@/components/post/CreatePostCard';
@@ -14,23 +15,42 @@ const Index = () => {
   useEffect(() => {
     fetch('https://moonmovement.onrender.com/api/posts')
       .then(res => res.json())
-      .then(data => setPosts(data))
-      .catch(() => setPosts([]));
+      .then(data => {
+        console.log('API Response:', data);
+        // Transform the data to match our expected format
+        const transformedPosts = data.map((post: any) => ({
+          ...post,
+          id: post.id.toString(),
+          voteScore: post.votes?.length || 0,
+          commentCount: post.comments?.length || 0,
+          timestamp: new Date(post.createdAt).toLocaleString(),
+          subreddit: 'general' // Default subreddit if not provided
+        }));
+        setPosts(transformedPosts);
+      })
+      .catch((error) => {
+        console.error('Failed to fetch posts:', error);
+        setPosts([]);
+      });
   }, []);
 
   // Get unique subreddits for trending
-  const subreddits = useMemo(() => Array.from(new Set(posts.map(post => post.subreddit))), [posts]);
+  const subreddits = useMemo(() => {
+    const subs = posts.map(post => post.subreddit || 'general');
+    return Array.from(new Set(subs));
+  }, [posts]);
 
   // Filter and sort posts
   const sortedPosts = useMemo(() => {
     let filtered = [...posts];
     if (searchQuery) {
-      filtered = filtered.filter(post => 
-        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.subreddit.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        post.author.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      filtered = filtered.filter(post => {
+        const authorName = typeof post.author === 'string' ? post.author : post.author.username;
+        return post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               post.subreddit.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               authorName.toLowerCase().includes(searchQuery.toLowerCase());
+      });
     }
     switch (sortBy) {
       case 'new':

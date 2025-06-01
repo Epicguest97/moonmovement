@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -22,10 +23,24 @@ const Community = () => {
       fetch('https://moonmovement.onrender.com/api/posts')
         .then(res => res.json())
         .then(data => {
-          const filtered = data.filter((post: Post) => post.subreddit.toLowerCase() === communityName.toLowerCase());
-          setCommunityPosts(filtered);
+          console.log('Community API Response:', data);
+          const filtered = data.filter((post: any) => 
+            (post.subreddit || 'general').toLowerCase() === communityName.toLowerCase()
+          );
+          const transformedPosts = filtered.map((post: any) => ({
+            ...post,
+            id: post.id.toString(),
+            voteScore: post.votes?.length || 0,
+            commentCount: post.comments?.length || 0,
+            timestamp: new Date(post.createdAt).toLocaleString(),
+            subreddit: post.subreddit || 'general'
+          }));
+          setCommunityPosts(transformedPosts);
         })
-        .catch(() => setCommunityPosts([]));
+        .catch((error) => {
+          console.error('Failed to fetch community posts:', error);
+          setCommunityPosts([]);
+        });
     }
   }, [communityName]);
   
@@ -64,7 +79,7 @@ const Community = () => {
                 <Button 
                   variant={sortBy === 'hot' ? 'default' : 'ghost'} 
                   size="sm" 
-                  className={sortBy === 'hot' ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
+                  className={sortBy === 'hot' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
                   onClick={() => setSortBy('hot')}
                 >
                   <Flame size={16} className="mr-1" />
@@ -73,7 +88,7 @@ const Community = () => {
                 <Button 
                   variant={sortBy === 'new' ? 'default' : 'ghost'} 
                   size="sm" 
-                  className={sortBy === 'new' ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
+                  className={sortBy === 'new' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
                   onClick={() => setSortBy('new')}
                 >
                   <Clock size={16} className="mr-1" />
@@ -82,7 +97,7 @@ const Community = () => {
                 <Button 
                   variant={sortBy === 'top' ? 'default' : 'ghost'} 
                   size="sm" 
-                  className={sortBy === 'top' ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
+                  className={sortBy === 'top' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
                   onClick={() => setSortBy('top')}
                 >
                   <TrendingUp size={16} className="mr-1" />

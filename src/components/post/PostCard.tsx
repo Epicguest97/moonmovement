@@ -1,83 +1,80 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
+import { MessageSquare, Share } from 'lucide-react';
 import VoteControls from './VoteControls';
 import PostContent from './PostContent';
-import PostFooter from './PostFooter';
 
 export interface Post {
   id: string;
   title: string;
   content: string;
+  author: {
+    id: number;
+    username: string;
+    email: string;
+    password: string;
+    createdAt: string;
+  } | string; // Support both formats for backward compatibility
   subreddit: string;
-  author: string;
   timestamp: string;
   voteScore: number;
   commentCount: number;
   imageUrl?: string;
-  isText?: boolean;
-  isLink?: boolean;
+  videoUrl?: string;
   linkUrl?: string;
 }
 
 interface PostCardProps {
   post: Post;
-  isCompact?: boolean;
 }
 
-const PostCard = ({ post, isCompact = false }: PostCardProps) => {
-  const [currentVoteScore, setCurrentVoteScore] = useState(post.voteScore);
-  const [voteStatus, setVoteStatus] = useState<'up' | 'down' | null>(null);
-
-  const handleVote = (direction: 'up' | 'down') => {
-    if (voteStatus === direction) {
-      // Remove vote
-      setVoteStatus(null);
-      setCurrentVoteScore(direction === 'up' ? currentVoteScore - 1 : currentVoteScore + 1);
-    } else {
-      // Change vote or add new vote
-      const scoreDelta = voteStatus === null 
-        ? (direction === 'up' ? 1 : -1) 
-        : (direction === 'up' ? 2 : -2);
-      setVoteStatus(direction);
-      setCurrentVoteScore(currentVoteScore + scoreDelta);
-    }
-  };
-
+const PostCard = ({ post }: PostCardProps) => {
+  // Handle both author object and string formats
+  const authorName = typeof post.author === 'string' ? post.author : post.author.username;
+  
   return (
-    <Card className="post-card overflow-hidden mb-3 bg-sidebar border-sidebar-border hover:border-sidebar-primary hover:shadow">
+    <Card className="overflow-hidden mb-4 bg-sidebar border-sidebar-border hover:border-sidebar-primary transition-all duration-200">
       <div className="flex">
-        <VoteControls 
-          score={currentVoteScore} 
-          voteStatus={voteStatus} 
-          onVote={handleVote} 
-        />
+        <VoteControls score={post.voteScore} />
         
-        <div className="flex-1 p-2">
-          <div className="flex items-center text-xs text-gray-400 mb-1">
+        <div className="flex-1 p-4">
+          <div className="flex items-center text-xs text-gray-400 mb-2">
             <Link to={`/r/${post.subreddit}`} className="font-medium text-gray-200 hover:underline mr-1">
               r/{post.subreddit}
             </Link>
             <span className="mx-1">•</span>
             Posted by{" "}
-            <Link to={`/user/${post.author}`} className="hover:underline mx-1 text-gray-400">
-              u/{post.author}
+            <Link to={`/user/${authorName}`} className="hover:underline mx-1 text-gray-400">
+              u/{authorName}
             </Link>
             <span className="mx-1">•</span>
             <span>{post.timestamp}</span>
           </div>
           
           <Link to={`/post/${post.id}`}>
-            <h2 className="text-lg font-medium mb-1 text-white hover:text-sidebar-primary">{post.title}</h2>
+            <h3 className="text-lg font-semibold mb-2 text-white hover:text-sidebar-primary cursor-pointer">
+              {post.title}
+            </h3>
           </Link>
           
-          <PostContent post={post} isCompact={isCompact} />
+          <PostContent post={post} />
           
-          <PostFooter 
-            commentCount={post.commentCount} 
-            postId={post.id} 
-          />
+          <div className="flex items-center mt-3 text-xs text-gray-400">
+            <Link 
+              to={`/post/${post.id}`}
+              className="flex items-center hover:bg-sidebar-accent rounded p-1 -ml-1"
+            >
+              <MessageSquare size={16} className="mr-1" />
+              {post.commentCount} Comments
+            </Link>
+            
+            <button className="flex items-center hover:bg-sidebar-accent rounded p-1 ml-2">
+              <Share size={16} className="mr-1" />
+              Share
+            </button>
+          </div>
         </div>
       </div>
     </Card>
