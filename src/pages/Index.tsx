@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import CreatePostCard from '@/components/post/CreatePostCard';
@@ -24,7 +23,7 @@ const Index = () => {
           voteScore: post.votes?.length || 0,
           commentCount: post.comments?.length || 0,
           timestamp: new Date(post.createdAt).toLocaleString(),
-          subreddit: 'general' // Default subreddit if not provided
+          subreddit: post.subreddit || 'general'
         }));
         setPosts(transformedPosts);
       })
