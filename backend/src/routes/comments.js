@@ -52,4 +52,19 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// GET all comments for a specific post
+router.get('/post/:postId', async (req, res) => {
+  const { postId } = req.params;
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { postId: Number(postId) },
+      include: { author: true },
+      orderBy: { createdAt: 'asc' }
+    });
+    res.json(comments);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch comments for post' });
+  }
+});
+
 module.exports = router; 
