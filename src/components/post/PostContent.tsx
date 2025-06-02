@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Post } from './PostCard';
 import { Link } from 'react-router-dom';
@@ -74,9 +73,12 @@ const PostContent = ({ post, isCompact = false, isDetailView = false }: PostCont
   };
   
   return (
-    <div className={isCompact && !isDetailView ? "max-h-40 overflow-hidden" : ""}>
+    <div className={cn(
+      isCompact && !isDetailView ? "max-h-40 overflow-hidden" : "",
+      "relative"
+    )}>
       {renderContent()}
-      
+
       {!isDetailView && (
         <Link to={`/post/${post.id}`} className="absolute inset-0 z-10">
           <span className="sr-only">View post</span>
