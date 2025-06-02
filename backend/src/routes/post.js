@@ -26,7 +26,9 @@ router.post('/', async (req, res) => {
         title,
         content,
         authorId: user.id,
-        // subreddit, imageUrl, linkUrl fields would need to be added to the Prisma schema if you want to store them
+        subreddit,
+        imageUrl,
+        linkUrl,
       },
       include: { author: true, comments: true, votes: true }
     });
