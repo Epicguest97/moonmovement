@@ -99,7 +99,7 @@ const PostDetail = () => {
     }
     const commentData = {
       content: commentText,
-      author: username, // Use the logged-in username
+      author: username,
       postId: post.id,
     };
     try {
@@ -109,7 +109,16 @@ const PostDetail = () => {
         body: JSON.stringify(commentData),
       });
       const newComment = await res.json();
-      setComments([newComment, ...comments]);
+      // Map backend response to CommentType
+      const mappedComment = {
+        id: newComment.id.toString(),
+        author: typeof newComment.author === 'string' ? newComment.author : newComment.author.username,
+        content: newComment.content,
+        timestamp: new Date(newComment.createdAt).toLocaleString(),
+        voteScore: 0,
+        replies: []
+      };
+      setComments([mappedComment, ...comments]);
       setPost({ ...post, commentCount: post.commentCount + 1 });
     } catch (err) {
       alert('Failed to submit comment');
