@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { MessageSquare, Share } from 'lucide-react';
@@ -36,17 +35,42 @@ const PostCard = ({ post }: PostCardProps) => {
   // Handle both author object and string formats
   const authorName = typeof post.author === 'string' ? post.author : post.author.username;
   
-  // Mock vote handling for now
-  const handleVote = (direction: 'up' | 'down') => {
-    console.log('Vote:', direction, 'on post:', post.id);
+  // Voting state
+  const [voteStatus, setVoteStatus] = useState<'up' | 'down' | null>(null);
+  const [voteScore, setVoteScore] = useState(post.voteScore);
+  
+  const handleVote = async (direction: 'up' | 'down') => {
+    const username = localStorage.getItem('username');
+    if (!username) {
+      alert('You must be signed in to vote.');
+      return;
+    }
+    const type = direction === 'up' ? 1 : -1;
+    try {
+      const res = await fetch(`https://moonmovement.onrender.com/api/posts/${post.id}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, type })
+      });
+      if (!res.ok) throw new Error('Failed to vote');
+      const updatedPost = await res.json();
+      // Calculate new vote score from updatedPost.votes
+      const newScore = Array.isArray(updatedPost.votes)
+        ? updatedPost.votes.reduce((sum: number, v: any) => sum + (v.type === 1 ? 1 : v.type === -1 ? -1 : 0), 0)
+        : 0;
+      setVoteScore(newScore);
+      setVoteStatus(direction);
+    } catch (err) {
+      alert('Failed to vote');
+    }
   };
   
   return (
     <Card className="post-card overflow-hidden mb-4 bg-sidebar border-sidebar-border">
       <div className="flex">
         <VoteControls 
-          score={post.voteScore} 
-          voteStatus={null} 
+          score={voteScore} 
+          voteStatus={voteStatus} 
           onVote={handleVote} 
         />
         

@@ -70,4 +70,43 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Vote (upvote or downvote) a post
+router.post('/:id/vote', async (req, res) => {
+  const { id } = req.params;
+  const { username, type } = req.body; // type: 1 for upvote, -1 for downvote
+  if (!username || ![1, -1].includes(type)) {
+    return res.status(400).json({ error: 'Invalid vote data' });
+  }
+  try {
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) return res.status(400).json({ error: 'User not found' });
+    const postId = Number(id);
+    // Check if vote exists
+    const existingVote = await prisma.vote.findFirst({
+      where: { userId: user.id, postId }
+    });
+    let vote;
+    if (existingVote) {
+      // Update vote
+      vote = await prisma.vote.update({
+        where: { id: existingVote.id },
+        data: { type }
+      });
+    } else {
+      // Create vote
+      vote = await prisma.vote.create({
+        data: { type, userId: user.id, postId }
+      });
+    }
+    // Return updated post with votes
+    const updatedPost = await prisma.post.findUnique({
+      where: { id: postId },
+      include: { author: true, comments: true, votes: true }
+    });
+    res.json(updatedPost);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to vote on post' });
+  }
+});
+
 module.exports = router; 
