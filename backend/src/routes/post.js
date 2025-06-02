@@ -32,7 +32,8 @@ router.post('/', async (req, res) => {
     });
     res.status(201).json(newPost);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to create post' });
+    console.error('POST / Error:', err);
+    res.status(500).json({ error: 'Failed to create post', details: err.message });
   }
 });
 
