@@ -54,12 +54,19 @@ const PostDetail = () => {
           setLoading(false);
         });
       
-      // Fetch comments for this specific post
-      fetch('https://moonmovement.onrender.com/api/comments')
+      // Fetch comments for this specific post using the new endpoint
+      fetch(`https://moonmovement.onrender.com/api/comments/post/${postId}`)
         .then(res => res.json())
         .then(data => {
-          // Filter comments by postId
-          const postComments = data.filter((c: any) => c.postId.toString() === postId);
+          // Map backend comment fields to CommentType expected by frontend
+          const postComments = data.map((c: any) => ({
+            id: c.id.toString(),
+            author: typeof c.author === 'string' ? c.author : c.author.username,
+            content: c.content,
+            timestamp: new Date(c.createdAt).toLocaleString(),
+            voteScore: 0, // You can update this if you add votes to comments
+            replies: [] // You can update this if you support nested comments
+          }));
           setComments(postComments);
         })
         .catch((error) => {
