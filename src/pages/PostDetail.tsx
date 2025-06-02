@@ -92,9 +92,14 @@ const PostDetail = () => {
   
   const handleCommentSubmit = async (commentText: string) => {
     if (!commentText.trim() || !post) return;
+    const username = localStorage.getItem('username');
+    if (!username) {
+      alert('You must be signed in to comment.');
+      return;
+    }
     const commentData = {
       content: commentText,
-      author: 'currentUser', // Replace with real user if available
+      author: username, // Use the logged-in username
       postId: post.id,
     };
     try {
