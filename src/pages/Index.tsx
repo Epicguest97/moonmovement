@@ -1,4 +1,6 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import CreatePostCard from '@/components/post/CreatePostCard';
 import PostCard, { Post } from '@/components/post/PostCard';
@@ -9,15 +11,30 @@ import { Flame, TrendingUp, Clock } from 'lucide-react';
 const Index = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [sortBy, setSortBy] = useState<'hot' | 'new' | 'top'>('hot');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Get search query from URL params
+  const searchQuery = searchParams.get('search') || '';
 
   useEffect(() => {
-    fetch('https://moonmovement.onrender.com/api/posts')
-      .then(res => res.json())
-      .then(data => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch('https://moonmovement.onrender.com/api/posts');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch posts');
+        }
+        
+        const data = await response.json();
         console.log('API Response:', data);
+        
         // Transform the data to match our expected format
-        const transformedPosts = data.map((post: any) => ({
+        const transformedPosts: Post[] = data.map((post: any) => ({
           ...post,
           id: post.id.toString(),
           voteScore: post.votes?.length || 0,
@@ -25,12 +42,18 @@ const Index = () => {
           timestamp: new Date(post.createdAt).toLocaleString(),
           subreddit: post.subreddit || 'general'
         }));
+        
         setPosts(transformedPosts);
-      })
-      .catch((error) => {
-        console.error('Failed to fetch posts:', error);
+      } catch (err) {
+        console.error('Failed to fetch posts:', err);
+        setError('Failed to load posts. Please try again.');
         setPosts([]);
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
   }, []);
 
   // Get unique subreddits for trending
@@ -42,6 +65,8 @@ const Index = () => {
   // Filter and sort posts
   const sortedPosts = useMemo(() => {
     let filtered = [...posts];
+    
+    // Apply search filter
     if (searchQuery) {
       filtered = filtered.filter(post => {
         const authorName = typeof post.author === 'string' ? post.author : post.author.username;
@@ -51,20 +76,56 @@ const Index = () => {
                authorName.toLowerCase().includes(searchQuery.toLowerCase());
       });
     }
+    
+    // Apply sorting
     switch (sortBy) {
       case 'new':
-        return filtered.sort((a, b) => 0); // You can implement real sorting if you have timestamps
+        return filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
       case 'top':
         return filtered.sort((a, b) => b.voteScore - a.voteScore);
       case 'hot':
       default:
+        // Hot could be a combination of votes and recency, for now just return as is
         return filtered;
     }
   }, [sortBy, searchQuery, posts]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+  const handleSortChange = (newSort: 'hot' | 'new' | 'top') => {
+    setSortBy(newSort);
   };
+
+  const handleCommunityClick = (communityName: string) => {
+    navigate(`/r/${communityName}`);
+  };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-sidebar p-8 border border-sidebar-border rounded-md text-center">
+            <h2 className="text-xl font-bold mb-2 text-white">Loading posts...</h2>
+            <p className="text-gray-300">Please wait while we fetch the latest content.</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-sidebar p-8 border border-sidebar-border rounded-md text-center">
+            <h2 className="text-xl font-bold mb-2 text-red-400">Error</h2>
+            <p className="text-gray-300 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -88,13 +149,14 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="posts">
+            {/* Sort Controls */}
             <div className="bg-sidebar border border-sidebar-border rounded-md mb-4">
-              <div className="flex p-2">
+              <div className="flex p-2 gap-1">
                 <Button 
                   variant={sortBy === 'hot' ? 'default' : 'ghost'} 
                   size="sm" 
                   className={sortBy === 'hot' ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
-                  onClick={() => setSortBy('hot')}
+                  onClick={() => handleSortChange('hot')}
                 >
                   <Flame size={16} className="mr-1" />
                   Hot
@@ -103,7 +165,7 @@ const Index = () => {
                   variant={sortBy === 'new' ? 'default' : 'ghost'} 
                   size="sm" 
                   className={sortBy === 'new' ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
-                  onClick={() => setSortBy('new')}
+                  onClick={() => handleSortChange('new')}
                 >
                   <Clock size={16} className="mr-1" />
                   New
@@ -112,46 +174,84 @@ const Index = () => {
                   variant={sortBy === 'top' ? 'default' : 'ghost'} 
                   size="sm" 
                   className={sortBy === 'top' ? 'bg-sidebar-accent text-sidebar-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
-                  onClick={() => setSortBy('top')}
+                  onClick={() => handleSortChange('top')}
                 >
                   <TrendingUp size={16} className="mr-1" />
                   Top
                 </Button>
               </div>
             </div>
+
+            {/* Search Results Info */}
+            {searchQuery && (
+              <div className="bg-sidebar border border-sidebar-border rounded-md mb-4 p-3">
+                <p className="text-sidebar-foreground text-sm">
+                  Showing results for: <span className="font-semibold">"{searchQuery}"</span>
+                  {sortedPosts.length > 0 && (
+                    <span className="text-gray-400 ml-2">({sortedPosts.length} results)</span>
+                  )}
+                </p>
+              </div>
+            )}
             
+            {/* Posts List */}
             {sortedPosts.length > 0 ? (
-              sortedPosts.map(post => (
-                <PostCard key={post.id} post={post} />
-              ))
+              <div className="space-y-4">
+                {sortedPosts.map(post => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
             ) : (
               <div className="bg-sidebar p-8 border border-sidebar-border rounded-md text-center">
-                <p className="text-gray-400">No posts match your search.</p>
+                <p className="text-gray-400">
+                  {searchQuery ? 'No posts match your search.' : 'No posts available yet.'}
+                </p>
+                {searchQuery && (
+                  <Button 
+                    variant="ghost" 
+                    className="mt-2" 
+                    onClick={() => navigate('/home')}
+                  >
+                    Clear search
+                  </Button>
+                )}
               </div>
             )}
           </TabsContent>
           
           <TabsContent value="trending">
             <div className="bg-sidebar border border-sidebar-border rounded-md">
-              <h3 className="text-lg font-medium p-4 border-b border-sidebar-border text-sidebar-foreground">Trending Communities</h3>
+              <h3 className="text-lg font-medium p-4 border-b border-sidebar-border text-sidebar-foreground">
+                Trending Communities
+              </h3>
               <div className="p-2">
-                {subreddits.slice(0, 5).map((subreddit, index) => (
-                  <div key={subreddit} className="p-2 hover:bg-sidebar-accent rounded-md">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-sidebar-primary text-sidebar-primary-foreground rounded-full flex items-center justify-center mr-3">
-                        <span className="font-bold">{index + 1}</span>
-                      </div>
-                      <div>
-                        <a href={`/r/${subreddit}`} className="font-medium hover:underline text-sidebar-foreground">
-                          r/{subreddit}
-                        </a>
-                        <p className="text-xs text-gray-400">
-                          {Math.floor(Math.random() * 1000) + 100} members online
-                        </p>
+                {subreddits.length > 0 ? (
+                  subreddits.slice(0, 5).map((subreddit, index) => (
+                    <div 
+                      key={subreddit} 
+                      className="p-2 hover:bg-sidebar-accent rounded-md cursor-pointer transition-colors"
+                      onClick={() => handleCommunityClick(subreddit)}
+                    >
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-sidebar-primary text-sidebar-primary-foreground rounded-full flex items-center justify-center mr-3">
+                          <span className="font-bold">{index + 1}</span>
+                        </div>
+                        <div>
+                          <div className="font-medium hover:underline text-sidebar-foreground">
+                            r/{subreddit}
+                          </div>
+                          <p className="text-xs text-gray-400">
+                            {Math.floor(Math.random() * 1000) + 100} members online
+                          </p>
+                        </div>
                       </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-gray-400">
+                    No communities available yet.
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </TabsContent>
