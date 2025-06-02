@@ -15,6 +15,21 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET a single post by ID
+router.get('/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const post = await prisma.post.findUnique({
+      where: { id: Number(id) },
+      include: { author: true, comments: true, votes: true }
+    });
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    res.json(post);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch post' });
+  }
+});
+
 // POST a new post
 router.post('/', async (req, res) => {
   const { title, content, subreddit, author, imageUrl, linkUrl } = req.body;
