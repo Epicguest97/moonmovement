@@ -31,7 +31,7 @@ const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login failed');
-      localStorage.setItem('username', data.user.username);
+      login(data.user, data.token);
       navigate('/home');
     } catch (err: any) {
       setError(err.message);
