@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +13,7 @@ interface CreateCommunityFormProps {
 }
 
 const CreateCommunityForm = ({ onCommunityCreated }: CreateCommunityFormProps) => {
+  const { isLoggedIn } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -29,6 +31,11 @@ const CreateCommunityForm = ({ onCommunityCreated }: CreateCommunityFormProps) =
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!isLoggedIn) {
+      setError('You must be logged in to create a community');
+      return;
+    }
+    
     if (!formData.name.trim() || !formData.description.trim()) {
       setError('Name and description are required');
       return;
@@ -38,10 +45,12 @@ const CreateCommunityForm = ({ onCommunityCreated }: CreateCommunityFormProps) =
     setError(null);
 
     try {
+      const token = localStorage.getItem('token');
       const response = await fetch('https://moonmovement.onrender.com/api/community', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(formData),
       });
@@ -72,6 +81,22 @@ const CreateCommunityForm = ({ onCommunityCreated }: CreateCommunityFormProps) =
       setIsSubmitting(false);
     }
   };
+
+  if (!isLoggedIn) {
+    return (
+      <Card className="bg-sidebar border-sidebar-border">
+        <CardContent className="p-6 text-center">
+          <p className="text-sidebar-foreground mb-4">You must be logged in to create a community</p>
+          <Button 
+            onClick={() => window.location.href = '/auth'}
+            className="bg-sidebar-primary hover:bg-sidebar-primary/90"
+          >
+            Login to Continue
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-sidebar border-sidebar-border">

@@ -2,7 +2,28 @@
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
+const jwt = require('jsonwebtoken');
 const prisma = new PrismaClient();
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
+// Middleware to verify authentication
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+    req.user = user;
+    next();
+  });
+};
 
 // GET all communities
 router.get('/', async (req, res) => {
@@ -24,7 +45,16 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const community = await prisma.community.findUnique({
-      where: { id: parseInt(id) }
+      where: { id: parseInt(id) },
+      include: {
+        members: {
+          include: {
+            user: {
+              select: { id: true, username: true }
+            }
+          }
+        }
+      }
     });
     
     if (!community) {
@@ -38,8 +68,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST create new community
-router.post('/', async (req, res) => {
+// POST create new community (requires authentication)
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, description, bannerImage, icon } = req.body;
     
@@ -54,7 +84,12 @@ router.post('/', async (req, res) => {
         bannerImage,
         icon,
         memberCount: 1,
-        onlineCount: 1
+        onlineCount: 1,
+        members: {
+          create: {
+            userId: req.user.userId
+          }
+        }
       }
     });
     
@@ -66,6 +101,120 @@ router.post('/', async (req, res) => {
     } else {
       res.status(500).json({ error: 'Failed to create community' });
     }
+  }
+});
+
+// POST join community (requires authentication)
+router.post('/:id/join', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    
+    // Check if user is already a member
+    const existingMember = await prisma.communityMember.findUnique({
+      where: {
+        userId_communityId: {
+          userId: userId,
+          communityId: parseInt(id)
+        }
+      }
+    });
+    
+    if (existingMember) {
+      return res.status(400).json({ error: 'Already a member of this community' });
+    }
+    
+    // Add user to community and increment member count
+    await prisma.$transaction([
+      prisma.communityMember.create({
+        data: {
+          userId: userId,
+          communityId: parseInt(id)
+        }
+      }),
+      prisma.community.update({
+        where: { id: parseInt(id) },
+        data: {
+          memberCount: {
+            increment: 1
+          }
+        }
+      })
+    ]);
+    
+    res.json({ message: 'Successfully joined community' });
+  } catch (error) {
+    console.error('Error joining community:', error);
+    res.status(500).json({ error: 'Failed to join community' });
+  }
+});
+
+// DELETE leave community (requires authentication)
+router.delete('/:id/leave', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    
+    // Check if user is a member
+    const member = await prisma.communityMember.findUnique({
+      where: {
+        userId_communityId: {
+          userId: userId,
+          communityId: parseInt(id)
+        }
+      }
+    });
+    
+    if (!member) {
+      return res.status(400).json({ error: 'Not a member of this community' });
+    }
+    
+    // Remove user from community and decrement member count
+    await prisma.$transaction([
+      prisma.communityMember.delete({
+        where: {
+          userId_communityId: {
+            userId: userId,
+            communityId: parseInt(id)
+          }
+        }
+      }),
+      prisma.community.update({
+        where: { id: parseInt(id) },
+        data: {
+          memberCount: {
+            decrement: 1
+          }
+        }
+      })
+    ]);
+    
+    res.json({ message: 'Successfully left community' });
+  } catch (error) {
+    console.error('Error leaving community:', error);
+    res.status(500).json({ error: 'Failed to leave community' });
+  }
+});
+
+// GET check if user is member of community
+router.get('/:id/membership', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    
+    const member = await prisma.communityMember.findUnique({
+      where: {
+        userId_communityId: {
+          userId: userId,
+          communityId: parseInt(id)
+        }
+      }
+    });
+    
+    res.json({ isMember: !!member });
+  } catch (error) {
+    console.error('Error checking membership:', error);
+    res.status(500).json({ error: 'Failed to check membership' });
   }
 });
 

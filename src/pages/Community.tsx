@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,9 +19,12 @@ interface Community {
 
 const Community = () => {
   const { communityName } = useParams<{ communityName: string }>();
+  const { isLoggedIn } = useAuth();
   const [community, setCommunity] = useState<Community | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMember, setIsMember] = useState(false);
+  const [membershipLoading, setMembershipLoading] = useState(false);
 
   useEffect(() => {
     const fetchCommunity = async () => {
@@ -38,6 +41,21 @@ const Community = () => {
         
         if (foundCommunity) {
           setCommunity(foundCommunity);
+          
+          // Check membership if user is logged in
+          if (isLoggedIn) {
+            const token = localStorage.getItem('token');
+            const membershipResponse = await fetch(`https://moonmovement.onrender.com/api/community/${foundCommunity.id}/membership`, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (membershipResponse.ok) {
+              const membershipData = await membershipResponse.json();
+              setIsMember(membershipData.isMember);
+            }
+          }
         } else {
           setError('Community not found');
         }
@@ -50,7 +68,42 @@ const Community = () => {
     };
 
     fetchCommunity();
-  }, [communityName]);
+  }, [communityName, isLoggedIn]);
+
+  const handleJoinLeave = async () => {
+    if (!isLoggedIn || !community) return;
+    
+    setMembershipLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const endpoint = isMember ? 'leave' : 'join';
+      const method = isMember ? 'DELETE' : 'POST';
+      
+      const response = await fetch(`https://moonmovement.onrender.com/api/community/${community.id}/${endpoint}`, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        setIsMember(!isMember);
+        // Update member count locally
+        setCommunity(prev => prev ? {
+          ...prev,
+          memberCount: prev.memberCount + (isMember ? -1 : 1)
+        } : null);
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update membership');
+      }
+    } catch (err) {
+      console.error('Error updating membership:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update membership');
+    } finally {
+      setMembershipLoading(false);
+    }
+  };
 
   const formatMemberCount = (count: number) => {
     if (count >= 1000000) {
@@ -136,12 +189,39 @@ const Community = () => {
 
         {/* Community Actions */}
         <div className="flex gap-4 mb-6">
-          <Button className="bg-sidebar-primary hover:bg-sidebar-primary/90 text-white">
-            Join Community
-          </Button>
-          <Button variant="outline" className="border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent">
-            Create Post
-          </Button>
+          {isLoggedIn ? (
+            <Button 
+              onClick={handleJoinLeave}
+              disabled={membershipLoading}
+              className={isMember 
+                ? "bg-gray-600 hover:bg-gray-700 text-white" 
+                : "bg-sidebar-primary hover:bg-sidebar-primary/90 text-white"
+              }
+            >
+              {membershipLoading ? 'Loading...' : (isMember ? 'Leave Community' : 'Join Community')}
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => window.location.href = '/auth'}
+              className="bg-sidebar-primary hover:bg-sidebar-primary/90 text-white"
+            >
+              Login to Join
+            </Button>
+          )}
+          
+          {isLoggedIn ? (
+            <Button variant="outline" className="border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent">
+              Create Post
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => window.location.href = '/auth'}
+              variant="outline" 
+              className="border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent"
+            >
+              Login to Post
+            </Button>
+          )}
         </div>
 
         {/* Community Content */}

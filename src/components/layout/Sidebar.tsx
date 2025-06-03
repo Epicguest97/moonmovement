@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -16,6 +16,7 @@ interface Community {
 }
 
 const Sidebar = () => {
+  const { isLoggedIn } = useAuth();
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -116,16 +117,36 @@ const Sidebar = () => {
         </CardContent>
         <Separator className="bg-sidebar-border" />
         <CardFooter className="flex flex-col items-stretch gap-2 px-4 py-3 bg-sidebar">
-          <Link to="/submit">
-            <Button className="w-full bg-sidebar-primary hover:bg-sidebar-primary/90 text-white">
-              Create Post
-            </Button>
-          </Link>
-          <Link to="/communities">
-            <Button variant="outline" className="w-full border-sidebar-primary text-sidebar-primary hover:bg-sidebar-primary/10">
-              Create Community
-            </Button>
-          </Link>
+          {isLoggedIn ? (
+            <>
+              <Link to="/submit">
+                <Button className="w-full bg-sidebar-primary hover:bg-sidebar-primary/90 text-white">
+                  Create Post
+                </Button>
+              </Link>
+              <Link to="/communities">
+                <Button variant="outline" className="w-full border-sidebar-primary text-sidebar-primary hover:bg-sidebar-primary/10">
+                  Create Community
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Button 
+                onClick={() => window.location.href = '/auth'}
+                className="w-full bg-sidebar-primary hover:bg-sidebar-primary/90 text-white"
+              >
+                Login to Post
+              </Button>
+              <Button 
+                onClick={() => window.location.href = '/auth'}
+                variant="outline" 
+                className="w-full border-sidebar-primary text-sidebar-primary hover:bg-sidebar-primary/10"
+              >
+                Login to Create Community
+              </Button>
+            </>
+          )}
         </CardFooter>
       </Card>
 
