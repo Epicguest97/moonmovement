@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Building2, Calendar, TrendingUp, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { StartupNewsItem } from './StartupNewsList';
+import { StartupNewsItem } from '@/types/startupNews';
 
 interface StartupNewsCardProps {
   news: StartupNewsItem;

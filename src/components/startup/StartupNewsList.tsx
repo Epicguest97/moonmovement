@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
-import StartupNewsCard, { StartupNewsItem } from './StartupNewsCard';
+import StartupNewsCard from './StartupNewsCard';
+import { StartupNewsItem } from '@/types/startupNews';
 import { Button } from '@/components/ui/button';
 
 const StartupNewsList = () => {
