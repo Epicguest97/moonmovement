@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -78,4 +79,16 @@ model Startup {
   description     String
   isUnicorn       Boolean  @default(false)
   createdAt       DateTime @default(now())
+}
+
+model Community {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String
+  memberCount Int      @default(1)
+  onlineCount Int      @default(0)
+  bannerImage String?
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

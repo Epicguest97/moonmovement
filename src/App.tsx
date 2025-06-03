@@ -17,6 +17,7 @@ import StartupNews from "./pages/StartupNews";
 import UnicornsIndia from "./pages/UnicornsIndia";
 import StartupDetail from "./pages/StartupDetail";
 import Auth from "./pages/Auth";
+import ManageCommunities from "./pages/ManageCommunities";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/unicorns-india" element={<UnicornsIndia />} />
             <Route path="/startup/:startupId" element={<StartupDetail />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/communities" element={<ManageCommunities />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
