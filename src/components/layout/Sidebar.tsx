@@ -1,18 +1,51 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
+interface Community {
+  id: number;
+  name: string;
+  description: string;
+  memberCount: number;
+  onlineCount: number;
+  bannerImage?: string;
+  icon?: string;
+}
+
 const Sidebar = () => {
-  const topCommunities = [
-    { name: 'programming', members: 4500000 },
-    { name: 'funny', members: 38000000 },
-    { name: 'AskReddit', members: 40000000 },
-    { name: 'gaming', members: 35000000 },
-    { name: 'science', members: 28000000 },
-  ];
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      try {
+        const response = await fetch('https://moonmovement.onrender.com/api/community');
+        if (response.ok) {
+          const data = await response.json();
+          setCommunities(data.slice(0, 5)); // Show top 5 communities
+        }
+      } catch (error) {
+        console.error('Error fetching communities:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCommunities();
+  }, []);
+
+  const formatMemberCount = (count: number) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    }
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
 
   return (
     <div className="space-y-4 sticky top-20">
@@ -22,31 +55,43 @@ const Sidebar = () => {
           Top Communities
         </CardHeader>
         <CardContent className="px-0 pt-2 pb-0 bg-sidebar">
-          <ul>
-            {topCommunities.map((community, index) => (
-              <li key={community.name}>
-                <Link 
-                  to={`/r/${community.name}`}
-                  className="flex items-center px-4 py-2 hover:bg-sidebar-accent text-gray-300 hover:text-sidebar-accent-foreground"
-                >
-                  <span className="mr-4 text-sm font-medium text-gray-500">{index + 1}</span>
-                  <div className="mr-3 bg-sidebar-primary text-white rounded-full w-6 h-6 flex items-center justify-center">
-                    r/
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">r/{community.name}</p>
-                    <p className="text-xs text-gray-500">{(community.members / 1000000).toFixed(1)}M members</p>
-                  </div>
-                </Link>
-                {index < topCommunities.length - 1 && <Separator className="bg-sidebar-border" />}
-              </li>
-            ))}
-          </ul>
+          {loading ? (
+            <div className="px-4 py-6 text-center text-gray-400">
+              Loading communities...
+            </div>
+          ) : communities.length > 0 ? (
+            <ul>
+              {communities.map((community, index) => (
+                <li key={community.id}>
+                  <Link 
+                    to={`/r/${community.name}`}
+                    className="flex items-center px-4 py-2 hover:bg-sidebar-accent text-gray-300 hover:text-sidebar-accent-foreground"
+                  >
+                    <span className="mr-4 text-sm font-medium text-gray-500">{index + 1}</span>
+                    <div className="mr-3 bg-sidebar-primary text-white rounded-full w-6 h-6 flex items-center justify-center">
+                      r/
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">r/{community.name}</p>
+                      <p className="text-xs text-gray-500">{formatMemberCount(community.memberCount)} members</p>
+                    </div>
+                  </Link>
+                  {index < communities.length - 1 && <Separator className="bg-sidebar-border" />}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="px-4 py-6 text-center text-gray-400">
+              No communities found
+            </div>
+          )}
         </CardContent>
         <CardFooter className="px-4 py-3 bg-sidebar">
-          <Button className="w-full bg-sidebar-primary hover:bg-sidebar-primary/90 text-white">
-            View All Communities
-          </Button>
+          <Link to="/communities" className="w-full">
+            <Button className="w-full bg-sidebar-primary hover:bg-sidebar-primary/90 text-white">
+              View All Communities
+            </Button>
+          </Link>
         </CardFooter>
       </Card>
 
@@ -71,12 +116,16 @@ const Sidebar = () => {
         </CardContent>
         <Separator className="bg-sidebar-border" />
         <CardFooter className="flex flex-col items-stretch gap-2 px-4 py-3 bg-sidebar">
-          <Button className="w-full bg-sidebar-primary hover:bg-sidebar-primary/90 text-white">
-            Create Post
-          </Button>
-          <Button variant="outline" className="w-full border-sidebar-primary text-sidebar-primary hover:bg-sidebar-primary/10">
-            Create Community
-          </Button>
+          <Link to="/submit">
+            <Button className="w-full bg-sidebar-primary hover:bg-sidebar-primary/90 text-white">
+              Create Post
+            </Button>
+          </Link>
+          <Link to="/communities">
+            <Button variant="outline" className="w-full border-sidebar-primary text-sidebar-primary hover:bg-sidebar-primary/10">
+              Create Community
+            </Button>
+          </Link>
         </CardFooter>
       </Card>
 

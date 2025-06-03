@@ -1,126 +1,161 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bell, Flame, TrendingUp, Clock } from 'lucide-react';
-import PostCard, { Post } from '@/components/post/PostCard';
-import CommunityHeader from '@/components/community/CommunityHeader';
-import { subreddits } from '@/data/subredditData';
-import CommunityCard from '@/components/community/CommunityCard';
+import { Users, Eye } from 'lucide-react';
+
+interface Community {
+  id: number;
+  name: string;
+  description: string;
+  memberCount: number;
+  onlineCount: number;
+  bannerImage?: string;
+  icon?: string;
+  createdAt: string;
+}
 
 const Community = () => {
   const { communityName } = useParams<{ communityName: string }>();
-  const [sortBy, setSortBy] = useState<'hot' | 'new' | 'top'>('hot');
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [communityPosts, setCommunityPosts] = useState<Post[]>([]);
-  
-  const subreddit = subreddits[communityName || ''] || null;
-  
+  const [community, setCommunity] = useState<Community | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (communityName) {
-      fetch('https://moonmovement.onrender.com/api/posts')
-        .then(res => res.json())
-        .then(data => {
-          console.log('Community API Response:', data);
-          const filtered = data.filter((post: any) => 
-            (post.subreddit || 'general').toLowerCase() === communityName.toLowerCase()
-          );
-          const transformedPosts = filtered.map((post: any) => ({
-            ...post,
-            id: post.id.toString(),
-            voteScore: post.votes?.length || 0,
-            commentCount: post.comments?.length || 0,
-            timestamp: new Date(post.createdAt).toLocaleString(),
-            subreddit: post.subreddit || 'general'
-          }));
-          setCommunityPosts(transformedPosts);
-        })
-        .catch((error) => {
-          console.error('Failed to fetch community posts:', error);
-          setCommunityPosts([]);
-        });
-    }
+    const fetchCommunity = async () => {
+      if (!communityName) return;
+      
+      try {
+        setLoading(true);
+        const response = await fetch('https://moonmovement.onrender.com/api/community');
+        if (!response.ok) {
+          throw new Error('Failed to fetch communities');
+        }
+        const communities = await response.json();
+        const foundCommunity = communities.find((c: Community) => c.name === communityName);
+        
+        if (foundCommunity) {
+          setCommunity(foundCommunity);
+        } else {
+          setError('Community not found');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch community');
+        console.error('Error fetching community:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCommunity();
   }, [communityName]);
-  
-  const toggleSubscription = () => {
-    setIsSubscribed(!isSubscribed);
+
+  const formatMemberCount = (count: number) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    }
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
   };
-  
-  if (!subreddit) {
+
+  if (loading) {
     return (
       <MainLayout>
-        <div className="max-w-3xl mx-auto p-4">
-          <div className="bg-sidebar p-10 rounded-md border border-sidebar-border text-center">
-            <h2 className="text-2xl font-bold mb-2 text-white">Community Not Found</h2>
-            <p className="text-gray-300">
-              Sorry, the community r/{communityName} doesn't exist or has been banned.
-            </p>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <p className="text-sidebar-foreground">Loading community...</p>
           </div>
         </div>
       </MainLayout>
     );
   }
-  
-  return (
-    <MainLayout>
-      <CommunityHeader 
-        subreddit={subreddit}
-        isSubscribed={isSubscribed}
-        onToggleSubscribe={toggleSubscription}
-      />
-      
-      <div className="container mx-auto px-4 mt-4">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="lg:flex-grow">
-            <div className="bg-sidebar border border-sidebar-border rounded-md mb-4">
-              <div className="flex p-2">
-                <Button 
-                  variant={sortBy === 'hot' ? 'default' : 'ghost'} 
-                  size="sm" 
-                  className={sortBy === 'hot' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
-                  onClick={() => setSortBy('hot')}
-                >
-                  <Flame size={16} className="mr-1" />
-                  Hot
-                </Button>
-                <Button 
-                  variant={sortBy === 'new' ? 'default' : 'ghost'} 
-                  size="sm" 
-                  className={sortBy === 'new' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
-                  onClick={() => setSortBy('new')}
-                >
-                  <Clock size={16} className="mr-1" />
-                  New
-                </Button>
-                <Button 
-                  variant={sortBy === 'top' ? 'default' : 'ghost'} 
-                  size="sm" 
-                  className={sortBy === 'top' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent'}
-                  onClick={() => setSortBy('top')}
-                >
-                  <TrendingUp size={16} className="mr-1" />
-                  Top
-                </Button>
-              </div>
-            </div>
-            
-            {communityPosts.length > 0 ? (
-              communityPosts.map(post => (
-                <PostCard key={post.id} post={post} />
-              ))
-            ) : (
-              <div className="bg-sidebar p-8 border border-sidebar-border rounded-md text-center">
-                <p className="text-gray-300">No posts in this community yet.</p>
-              </div>
-            )}
-          </div>
-          
-          <div className="w-full lg:w-80">
-            <CommunityCard subreddit={subreddit} isSubscribed={isSubscribed} onToggleSubscribe={toggleSubscription} />
+
+  if (error || !community) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <p className="text-red-400">{error || 'Community not found'}</p>
           </div>
         </div>
+      </MainLayout>
+    );
+  }
+
+  return (
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Community Header */}
+        <Card className="mb-6 bg-sidebar border-sidebar-border">
+          {/* Banner */}
+          <div 
+            className="h-32 bg-gradient-to-r from-sidebar-primary to-sidebar-primary/80 rounded-t-lg"
+            style={community.bannerImage ? { 
+              backgroundImage: `url(${community.bannerImage})`, 
+              backgroundSize: 'cover', 
+              backgroundPosition: 'center' 
+            } : {}}
+          />
+          
+          <CardContent className="relative pt-8 pb-4">
+            {/* Community Icon */}
+            <div className="absolute -top-8 left-6">
+              <div className="w-16 h-16 bg-sidebar-primary text-white rounded-full flex items-center justify-center border-4 border-sidebar">
+                {community.icon ? (
+                  <img src={community.icon} alt={community.name} className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-bold">r/</span>
+                )}
+              </div>
+            </div>
+
+            <div className="ml-20">
+              <h1 className="text-3xl font-bold text-sidebar-foreground mb-2">r/{community.name}</h1>
+              <p className="text-gray-300 mb-4">{community.description}</p>
+              
+              <div className="flex items-center gap-6 text-sm text-gray-400">
+                <div className="flex items-center gap-1">
+                  <Users size={16} />
+                  <span>{formatMemberCount(community.memberCount)} members</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Eye size={16} />
+                  <span>{community.onlineCount} online</span>
+                </div>
+                <div>
+                  <span>Created {new Date(community.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Community Actions */}
+        <div className="flex gap-4 mb-6">
+          <Button className="bg-sidebar-primary hover:bg-sidebar-primary/90 text-white">
+            Join Community
+          </Button>
+          <Button variant="outline" className="border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent">
+            Create Post
+          </Button>
+        </div>
+
+        {/* Community Content */}
+        <Card className="bg-sidebar border-sidebar-border">
+          <CardHeader>
+            <h2 className="text-xl font-semibold text-sidebar-foreground">Posts</h2>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8 text-gray-400">
+              <p>No posts yet in this community.</p>
+              <p className="text-sm mt-2">Be the first to create a post!</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );
