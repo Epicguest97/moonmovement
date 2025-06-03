@@ -1,11 +1,9 @@
-
 const express = require('express');
 const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
-const jwt = require('jsonwebtoken');
 const prisma = new PrismaClient();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../config');
 
 // Middleware to verify authentication
 const authenticateToken = (req, res, next) => {
