@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,11 +8,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Building2, Calendar, TrendingUp, MapPin } from 'lucide-react';
 
 interface UnicornCompany {
-  id: string;
+  id: number;
   name: string;
   sector: string;
   valuation: string;
-  valuationNumber: number; // For sorting
+  valuationNumber: number;
   city: string;
   foundedYear: number;
   logoUrl?: string;
@@ -20,127 +20,75 @@ interface UnicornCompany {
   isUnicorn: boolean;
 }
 
-const unicornData: UnicornCompany[] = [
-  {
-    id: '1',
-    name: 'Flipkart',
-    sector: 'E-commerce',
-    valuation: '$37.6B',
-    valuationNumber: 37.6,
-    city: 'Bangalore',
-    foundedYear: 2007,
-    logoUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop',
-    description: 'India\'s leading e-commerce marketplace offering a wide range of products.',
-    isUnicorn: true
-  },
-  {
-    id: '2',
-    name: 'Byju\'s',
-    sector: 'EdTech',
-    valuation: '$22B',
-    valuationNumber: 22,
-    city: 'Bangalore',
-    foundedYear: 2011,
-    logoUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=100&h=100&fit=crop',
-    description: 'Online education platform providing personalized learning programs.',
-    isUnicorn: true
-  },
-  {
-    id: '3',
-    name: 'Paytm',
-    sector: 'Fintech',
-    valuation: '$16B',
-    valuationNumber: 16,
-    city: 'Noida',
-    foundedYear: 2010,
-    logoUrl: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=100&h=100&fit=crop',
-    description: 'Digital payments and financial services platform.',
-    isUnicorn: true
-  },
-  {
-    id: '4',
-    name: 'Swiggy',
-    sector: 'Food Delivery',
-    valuation: '$10.7B',
-    valuationNumber: 10.7,
-    city: 'Bangalore',
-    foundedYear: 2014,
-    logoUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=100&h=100&fit=crop',
-    description: 'On-demand delivery platform for food and other essentials.',
-    isUnicorn: true
-  },
-  {
-    id: '5',
-    name: 'Razorpay',
-    sector: 'Fintech',
-    valuation: '$7.5B',
-    valuationNumber: 7.5,
-    city: 'Bangalore',
-    foundedYear: 2014,
-    logoUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop',
-    description: 'Payment gateway and financial services for businesses.',
-    isUnicorn: true
-  },
-  {
-    id: '6',
-    name: 'Zomato',
-    sector: 'Food Delivery',
-    valuation: '$5.4B',
-    valuationNumber: 5.4,
-    city: 'Gurgaon',
-    foundedYear: 2008,
-    logoUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=100&h=100&fit=crop',
-    description: 'Food delivery and restaurant discovery platform.',
-    isUnicorn: true
-  },
-  {
-    id: '7',
-    name: 'Cars24',
-    sector: 'Automotive',
-    valuation: '$900M',
-    valuationNumber: 0.9,
-    city: 'Gurgaon',
-    foundedYear: 2015,
-    logoUrl: 'https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=100&h=100&fit=crop',
-    description: 'Used car buying and selling platform.',
-    isUnicorn: false
-  },
-  {
-    id: '8',
-    name: 'PharmEasy',
-    sector: 'HealthTech',
-    valuation: '$800M',
-    valuationNumber: 0.8,
-    city: 'Mumbai',
-    foundedYear: 2015,
-    logoUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=100&h=100&fit=crop',
-    description: 'Online pharmacy and healthcare platform.',
-    isUnicorn: false
-  },
-  {
-    id: '9',
-    name: 'Meesho',
-    sector: 'Social Commerce',
-    valuation: '$700M',
-    valuationNumber: 0.7,
-    city: 'Bangalore',
-    foundedYear: 2015,
-    logoUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop',
-    description: 'Social commerce platform enabling reselling through social media.',
-    isUnicorn: false
-  }
-];
-
 const UnicornsIndia = () => {
   const [filterType, setFilterType] = useState<'all' | 'unicorns' | 'sunicorns'>('all');
+  const [startups, setStartups] = useState<UnicornCompany[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredCompanies = unicornData
+  useEffect(() => {
+    const fetchStartups = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('https://moonmovement.onrender.com/api/startups');
+        if (!response.ok) {
+          throw new Error('Failed to fetch startups');
+        }
+        const startupsData = await response.json();
+        setStartups(startupsData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch startups');
+        console.error('Error fetching startups:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStartups();
+  }, []);
+
+  const filteredCompanies = startups
     .filter(company => {
       if (filterType === 'unicorns') return company.isUnicorn;
       if (filterType === 'sunicorns') return !company.isUnicorn;
       return true;
     })
-    .sort((a, b) => b.valuationNumber - a.valuationNumber); // Sort by valuation descending
+    .sort((a, b) => b.valuationNumber - a.valuationNumber);
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-white mb-2">Indian Startup Ecosystem</h1>
+            <p className="text-gray-300">Discover India's most valuable startups and emerging companies</p>
+          </div>
+          <div className="text-center py-8">
+            <p className="text-gray-300">Loading startups...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-white mb-2">Indian Startup Ecosystem</h1>
+            <p className="text-gray-300">Discover India's most valuable startups and emerging companies</p>
+          </div>
+          <div className="text-center py-8">
+            <p className="text-red-400">Error: {error}</p>
+            <Button onClick={() => window.location.reload()} className="mt-4 bg-sidebar-primary hover:bg-sidebar-primary/90">
+              Retry
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -156,21 +104,21 @@ const UnicornsIndia = () => {
             className={filterType === 'all' ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent'}
             onClick={() => setFilterType('all')}
           >
-            All Companies ({unicornData.length})
+            All Companies ({startups.length})
           </Button>
           <Button 
             variant={filterType === 'unicorns' ? 'default' : 'outline'}
             className={filterType === 'unicorns' ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent'}
             onClick={() => setFilterType('unicorns')}
           >
-            Unicorns ({unicornData.filter(c => c.isUnicorn).length})
+            Unicorns ({startups.filter(c => c.isUnicorn).length})
           </Button>
           <Button 
             variant={filterType === 'sunicorns' ? 'default' : 'outline'}
             className={filterType === 'sunicorns' ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent'}
             onClick={() => setFilterType('sunicorns')}
           >
-            Soonicorns ({unicornData.filter(c => !c.isUnicorn).length})
+            Soonicorns ({startups.filter(c => !c.isUnicorn).length})
           </Button>
         </div>
 

@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -65,4 +64,18 @@ model News {
   category    String
   publishedAt DateTime
   createdAt   DateTime @default(now())
+}
+
+model Startup {
+  id              Int      @id @default(autoincrement())
+  name            String
+  sector          String
+  valuation       String
+  valuationNumber Float
+  city            String
+  foundedYear     Int
+  logoUrl         String?
+  description     String
+  isUnicorn       Boolean  @default(false)
+  createdAt       DateTime @default(now())
 }

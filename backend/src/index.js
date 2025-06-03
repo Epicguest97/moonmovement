@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -14,16 +13,18 @@ const communityRouter = require('./routes/community');
 const postRouter = require('./routes/post');
 const newsRouter = require('./routes/news');
 const authRoutes = require('./routes/auth');
+const startupsRouter = require('./routes/startups');
 
 app.get("/", (req, res) => {
   res.send("Reddit backend running");
 });
 
-app.use('/api/comments', commentsRouter);
-app.use('/api/community', communityRouter);
-app.use('/api/posts', postRouter);
-app.use('/api/news', newsRouter);
-app.use('/api', authRoutes);
+app.use('/api/posts', require('./routes/post'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/comments', require('./routes/comments'));
+app.use('/api/news', require('./routes/news'));
+app.use('/api/startups', require('./routes/startups'));
+app.use('/api/community', require('./routes/community'));
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
