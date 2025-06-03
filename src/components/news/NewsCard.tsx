@@ -6,15 +6,16 @@ import { Calendar, Link as LinkIcon, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export interface NewsItem {
-  id: string;
+  id: number;
   title: string;
   summary: string;
+  content?: string;
   source: string;
   url: string;
-  publishedAt: string;
   imageUrl?: string;
   category: string;
-  content?: string;
+  publishedAt: string;
+  createdAt: string;
 }
 
 interface NewsCardProps {
@@ -22,6 +23,14 @@ interface NewsCardProps {
 }
 
 const NewsCard = ({ news }: NewsCardProps) => {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
     <Card className="mb-4 overflow-hidden bg-sidebar border-sidebar-border hover:border-sidebar-primary transition-all duration-200">
       <div className="flex flex-col md:flex-row">
@@ -42,7 +51,7 @@ const NewsCard = ({ news }: NewsCardProps) => {
             </span>
             <span className="flex items-center gap-1">
               <Calendar size={12} />
-              {news.publishedAt}
+              {formatDate(news.publishedAt)}
             </span>
             <span className="text-gray-500">{news.source}</span>
           </div>

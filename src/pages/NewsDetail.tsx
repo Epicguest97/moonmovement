@@ -1,22 +1,75 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
-import { mockNews } from '@/components/news/NewsList';
+import { NewsItem } from '@/components/news/NewsCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, Link as LinkIcon, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const NewsDetail = () => {
   const { newsId } = useParams<{ newsId: string }>();
-  const newsItem = mockNews.find(news => news.id === newsId);
+  const [newsItem, setNewsItem] = useState<NewsItem | null>(null);
+  const [relatedNews, setRelatedNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!newsItem) {
+  useEffect(() => {
+    const fetchNews = async () => {
+      if (!newsId) return;
+      
+      try {
+        setLoading(true);
+        // Fetch the specific news item
+        const response = await fetch(`https://moonmovement.onrender.com/api/news/${newsId}`);
+        if (!response.ok) {
+          throw new Error('News article not found');
+        }
+        const newsData = await response.json();
+        setNewsItem(newsData);
+
+        // Fetch related news (all news except the current one)
+        const allNewsResponse = await fetch('https://moonmovement.onrender.com/api/news');
+        if (allNewsResponse.ok) {
+          const allNews = await allNewsResponse.json();
+          const related = allNews.filter((item: NewsItem) => item.id !== parseInt(newsId)).slice(0, 3);
+          setRelatedNews(related);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch news');
+        console.error('Error fetching news:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
+  }, [newsId]);
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="max-w-4xl mx-auto text-center py-12">
+          <p className="text-gray-300">Loading news article...</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (error || !newsItem) {
     return (
       <MainLayout>
         <div className="max-w-4xl mx-auto text-center py-12">
           <h2 className="text-2xl font-bold text-white mb-4">News article not found</h2>
-          <p className="text-gray-300">The news article you're looking for doesn't exist or has been removed.</p>
+          <p className="text-gray-300">{error || "The news article you're looking for doesn't exist or has been removed."}</p>
         </div>
       </MainLayout>
     );
@@ -43,7 +96,7 @@ const NewsDetail = () => {
               </span>
               <span className="flex items-center gap-1">
                 <Calendar size={12} />
-                {newsItem.publishedAt}
+                {formatDate(newsItem.publishedAt)}
               </span>
               <span className="text-gray-500">{newsItem.source}</span>
             </div>
@@ -52,9 +105,11 @@ const NewsDetail = () => {
             
             <p className="text-lg text-gray-300 mb-6 italic">{newsItem.summary}</p>
             
-            <div className="prose prose-invert max-w-none" 
-                 dangerouslySetInnerHTML={{ __html: newsItem.content || '' }}>
-            </div>
+            {newsItem.content && (
+              <div className="prose prose-invert max-w-none" 
+                   dangerouslySetInnerHTML={{ __html: newsItem.content }}>
+              </div>
+            )}
             
             <div className="flex items-center justify-between mt-8 border-t border-sidebar-border pt-4">
               <a 
@@ -75,13 +130,11 @@ const NewsDetail = () => {
           </CardContent>
         </Card>
         
-        <div className="mt-8 mb-6">
-          <h3 className="text-xl font-bold text-white mb-4">Related News</h3>
-          <div className="flex overflow-x-auto gap-4 pb-4">
-            {mockNews
-              .filter(news => news.id !== newsId)
-              .slice(0, 3)
-              .map(news => (
+        {relatedNews.length > 0 && (
+          <div className="mt-8 mb-6">
+            <h3 className="text-xl font-bold text-white mb-4">Related News</h3>
+            <div className="flex overflow-x-auto gap-4 pb-4">
+              {relatedNews.map(news => (
                 <Card key={news.id} className="min-w-[300px] max-w-[300px] bg-sidebar border-sidebar-border">
                   {news.imageUrl && (
                     <div className="h-40">
@@ -94,12 +147,13 @@ const NewsDetail = () => {
                   )}
                   <CardContent className="p-4">
                     <h4 className="font-bold text-white mb-2 line-clamp-2">{news.title}</h4>
-                    <p className="text-xs text-gray-400">{news.publishedAt}</p>
+                    <p className="text-xs text-gray-400">{formatDate(news.publishedAt)}</p>
                   </CardContent>
                 </Card>
               ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </MainLayout>
   );

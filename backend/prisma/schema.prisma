@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -51,4 +52,17 @@ model Vote {
   post      Post     @relation(fields: [postId], references: [id])
   postId    Int
   createdAt DateTime @default(now())
+}
+
+model News {
+  id          Int      @id @default(autoincrement())
+  title       String
+  summary     String
+  content     String?
+  source      String
+  url         String
+  imageUrl    String?
+  category    String
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
 }
