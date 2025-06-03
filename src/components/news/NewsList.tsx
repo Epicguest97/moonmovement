@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import NewsCard, { NewsItem } from './NewsCard';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,13 @@ const NewsList = () => {
           throw new Error('Failed to fetch news');
         }
         const newsData = await response.json();
-        setNews(newsData);
+        // Make sure newsData is an array before setting it
+        if (Array.isArray(newsData)) {
+          setNews(newsData);
+        } else {
+          console.error('Expected an array of news items but got:', newsData);
+          setError('Received invalid data format');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch news');
         console.error('Error fetching news:', err);
@@ -61,6 +66,9 @@ const NewsList = () => {
     );
   }
 
+  // Ensure news is an array before rendering
+  const newsItems = Array.isArray(news) ? news : [];
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
@@ -78,13 +86,13 @@ const NewsList = () => {
         </div>
       </div>
       
-      {news.length === 0 ? (
+      {newsItems.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-300">No news articles found.</p>
         </div>
       ) : (
         <>
-          {news.map(newsItem => (
+          {newsItems.map(newsItem => (
             <NewsCard key={newsItem.id} news={newsItem} />
           ))}
           

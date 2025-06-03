@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Building2, Calendar, TrendingUp, ExternalLink } from 'lucide-react';
@@ -52,14 +51,14 @@ const StartupNewsCard = ({ news }: StartupNewsCardProps) => {
           <p className="text-sm text-gray-300 mb-4 line-clamp-2">{news.summary}</p>
           
           <div className="flex flex-wrap gap-2 mb-4">
-            {news.tags.map((tag, index) => (
+            {news.tags && news.tags.map((tag, index) => (
               <span 
                 key={index}
                 className="bg-sidebar-accent text-sidebar-accent-foreground px-2 py-1 rounded text-xs"
               >
                 {tag}
               </span>
-            ))}
+            )) }
           </div>
           
           <div className="flex items-center justify-between">
