@@ -6,13 +6,27 @@ const prisma = require('../utils/prisma');
 // GET all posts
 router.get('/', async (req, res) => {
   try {
+    console.log('Fetching posts...');
     const posts = await prisma.post.findMany({
-      include: { author: true, comments: true, votes: true },
+      include: { 
+        author: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            createdAt: true
+          }
+        }, 
+        comments: true, 
+        votes: true 
+      },
       orderBy: { createdAt: 'desc' }
     });
+    console.log('Posts fetched successfully:', posts.length);
     res.json(posts);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch posts' });
+    console.error('Error fetching posts:', err);
+    res.status(500).json({ error: 'Failed to fetch posts', details: err.message });
   }
 });
 
@@ -22,12 +36,24 @@ router.get('/:id', async (req, res) => {
   try {
     const post = await prisma.post.findUnique({
       where: { id: Number(id) },
-      include: { author: true, comments: true, votes: true }
+      include: { 
+        author: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            createdAt: true
+          }
+        }, 
+        comments: true, 
+        votes: true 
+      }
     });
     if (!post) return res.status(404).json({ error: 'Post not found' });
     res.json(post);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch post' });
+    console.error('Error fetching post:', err);
+    res.status(500).json({ error: 'Failed to fetch post', details: err.message });
   }
 });
 
@@ -47,7 +73,18 @@ router.post('/', async (req, res) => {
         linkUrl,
         tags: tags ? tags.join(',') : null, // Store tags as comma-separated string
       },
-      include: { author: true, comments: true, votes: true }
+      include: { 
+        author: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            createdAt: true
+          }
+        }, 
+        comments: true, 
+        votes: true 
+      }
     });
     res.status(201).json(newPost);
   } catch (err) {
@@ -68,11 +105,23 @@ router.put('/:id', async (req, res) => {
         content,
         tags: tags ? tags.join(',') : null
       },
-      include: { author: true, comments: true, votes: true }
+      include: { 
+        author: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            createdAt: true
+          }
+        }, 
+        comments: true, 
+        votes: true 
+      }
     });
     res.json(updated);
   } catch (err) {
-    res.status(404).json({ error: 'Post not found' });
+    console.error('PUT /:id Error:', err);
+    res.status(404).json({ error: 'Post not found', details: err.message });
   }
 });
 
@@ -107,12 +156,24 @@ router.post('/:id/vote', async (req, res) => {
     // Return updated post with votes
     const updatedPost = await prisma.post.findUnique({
       where: { id: postId },
-      include: { author: true, comments: true, votes: true }
+      include: { 
+        author: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            createdAt: true
+          }
+        }, 
+        comments: true, 
+        votes: true 
+      }
     });
     res.json(updatedPost);
   } catch (err) {
-    res.status(500).json({ error: 'Failed to vote on post' });
+    console.error('Vote Error:', err);
+    res.status(500).json({ error: 'Failed to vote on post', details: err.message });
   }
 });
 
-module.exports = router; 
+module.exports = router;
