@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -192,7 +191,7 @@ const Header = () => {
             </>
           ) : (
             <div className="flex items-center space-x-2">
-              <Link to="/auth">
+              <Link to="/auth?mode=login">
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -201,7 +200,7 @@ const Header = () => {
                   Log In
                 </Button>
               </Link>
-              <Link to="/auth">
+              <Link to="/auth?mode=signup">
                 <Button 
                   size="sm" 
                   className="bg-sidebar-primary hover:bg-sidebar-primary/90 text-white"
@@ -218,10 +217,10 @@ const Header = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="bg-sidebar border-sidebar-border">
                   <DropdownMenuItem asChild>
-                    <Link to="/auth" className="text-gray-300 hover:text-white">Log In</Link>
+                    <Link to="/auth?mode=login" className="text-gray-300 hover:text-white">Log In</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to="/auth" className="text-gray-300 hover:text-white">Sign Up</Link>
+                    <Link to="/auth?mode=signup" className="text-gray-300 hover:text-white">Sign Up</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
