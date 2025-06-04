@@ -36,8 +36,11 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Signup failed');
-      localStorage.setItem('username', data.user.username);
-      navigate('/home');
+      
+      // On success, store username and switch to login page
+      localStorage.setItem('username', data.username);
+      alert('Account created successfully! Please log in.');
+      onSwitchToLogin(); // Switch to login page
     } catch (err: any) {
       setError(err.message);
     } finally {
