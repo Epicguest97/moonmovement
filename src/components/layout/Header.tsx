@@ -12,6 +12,7 @@ import {
   User,
   Newspaper,
   Building2,
+  Map,
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -201,12 +202,19 @@ const Header = () => {
             </Button>
           </Link>
           
-          <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-            <Search size={20} />
-          </Button>
+          <Link to="/districts" className="mr-2">
+            <Button variant="ghost" size="sm" className="hidden sm:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+              <Map size={16} className="mr-2" />
+              Districts
+            </Button>
+          </Link>
           
           {isLoggedIn ? (
             <>
+              <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                <Search size={20} />
+              </Button>
+              
               <Button variant="ghost" size="icon" className="text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                 <Bell size={20} />
               </Button>

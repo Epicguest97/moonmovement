@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +18,7 @@ import UnicornsIndia from "./pages/UnicornsIndia";
 import StartupDetail from "./pages/StartupDetail";
 import Auth from "./pages/Auth";
 import ManageCommunities from "./pages/ManageCommunities";
+import IndianDistricts from "./pages/IndianDistricts";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +40,7 @@ const App = () => (
             <Route path="/news" element={<StartupNews />} />
             <Route path="/news/:newsId" element={<NewsDetail />} />
             <Route path="/unicorns-india" element={<UnicornsIndia />} />
+            <Route path="/districts" element={<IndianDistricts />} />
             <Route path="/startup/:startupId" element={<StartupDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/communities" element={<ManageCommunities />} />
