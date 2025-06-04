@@ -53,9 +53,9 @@ const Profile = () => {
       try {
         setLoading(true);
         
-        // Set basic profile from auth context
+        // Set basic profile from auth context - fix the type issue
         setProfile({
-          id: user.id || 1,
+          id: typeof user.id === 'number' ? user.id : parseInt(user.id?.toString() || '1'),
           username: user.username,
           email: user.email,
           bio: 'Welcome to my profile!',
