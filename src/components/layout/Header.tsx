@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,24 +23,58 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Define a type for the Community
+interface Community {
+  id: number;
+  name: string;
+  memberCount: number;
+  description?: string;
+  bannerImage?: string;
+  icon?: string;
+}
+
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { isLoggedIn, user, logout } = useAuth();
 
-  // Communities for dropdown
-  const topCommunities = [
-    { name: 'programming', members: '4.2m' },
-    { name: 'AskReddit', members: '42.1m' },
-    { name: 'movies', members: '31.4m' },
-    { name: 'science', members: '28.9m' },
-    { name: 'cats', members: '5.3m' },
-    { name: 'pcmasterrace', members: '7.1m' },
-    { name: 'cscareerquestions', members: '960k' },
-    { name: 'travel', members: '8.5m' },
-    { name: 'natureisbeautiful', members: '3.7m' },
-    { name: 'Baking', members: '2.4m' },
-  ];
+  // Fetch communities on component mount
+  useEffect(() => {
+    const fetchCommunities = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch('https://moonmovement.onrender.com/api/community');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch communities');
+        }
+        
+        const data = await response.json();
+        setCommunities(data);
+      } catch (err) {
+        console.error('Error fetching communities:', err);
+        setError('Failed to load communities');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCommunities();
+  }, []);
+
+  // Format member count for display (e.g., 1000 -> 1k, 1000000 -> 1m)
+  const formatMemberCount = (count: number): string => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}m`;
+    } else if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
 
   // Handle search submission
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -80,14 +114,23 @@ const Header = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56 bg-sidebar border-sidebar-border">
                 <DropdownMenuLabel className="text-white">Your Communities</DropdownMenuLabel>
-                {topCommunities.map(community => (
-                  <DropdownMenuItem key={community.name} asChild>
-                    <Link to={`/r/${community.name}`} className="flex justify-between w-full text-gray-300 hover:text-white">
-                      <span>r/{community.name}</span>
-                      <span className="text-xs text-gray-500">{community.members}</span>
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
+                {loading ? (
+                  <DropdownMenuItem disabled className="text-gray-400">Loading communities...</DropdownMenuItem>
+                ) : error ? (
+                  <DropdownMenuItem disabled className="text-gray-400">Error loading communities</DropdownMenuItem>
+                ) : communities.length > 0 ? (
+                  communities.slice(0, 10).map(community => (
+                    <DropdownMenuItem key={community.id} asChild>
+                      <Link to={`/r/${community.name}`} className="flex justify-between w-full text-gray-300 hover:text-white">
+                        <span>r/{community.name}</span>
+                        <span className="text-xs text-gray-500">{formatMemberCount(community.memberCount)}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <DropdownMenuItem disabled className="text-gray-400">No communities found</DropdownMenuItem>
+                )}
+                
                 <DropdownMenuSeparator className="bg-sidebar-border" />
                 <DropdownMenuLabel className="text-white">Feeds</DropdownMenuLabel>
                 <DropdownMenuItem asChild>
