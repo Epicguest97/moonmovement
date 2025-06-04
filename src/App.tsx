@@ -11,6 +11,7 @@ import Community from "./pages/Community";
 import Submit from "./pages/Submit";
 import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
+import Profile from "./pages/Profile";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import StartupNews from "./pages/StartupNews";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/r/:communityName" element={<Community />} />
             <Route path="/submit" element={<Submit />} />
             <Route path="/user/:username" element={<UserProfile />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/news" element={<StartupNews />} />
             <Route path="/news/:newsId" element={<NewsDetail />} />
             <Route path="/unicorns-india" element={<UnicornsIndia />} />
