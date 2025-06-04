@@ -31,6 +31,8 @@ interface Community {
   description?: string;
   bannerImage?: string;
   icon?: string;
+  createdAt?: string;
+  onlineCount?: number;
 }
 
 const Header = () => {
@@ -112,7 +114,7 @@ const Header = () => {
                   <ChevronDown size={16} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 bg-sidebar border-sidebar-border">
+              <DropdownMenuContent align="start" className="w-64 bg-sidebar border-sidebar-border">
                 <DropdownMenuLabel className="text-white">Your Communities</DropdownMenuLabel>
                 {loading ? (
                   <DropdownMenuItem disabled className="text-gray-400">Loading communities...</DropdownMenuItem>
@@ -121,8 +123,24 @@ const Header = () => {
                 ) : communities.length > 0 ? (
                   communities.slice(0, 10).map(community => (
                     <DropdownMenuItem key={community.id} asChild>
-                      <Link to={`/r/${community.name}`} className="flex justify-between w-full text-gray-300 hover:text-white">
-                        <span>r/{community.name}</span>
+                      <Link 
+                        to={`/r/${community.name}`} 
+                        className="flex items-center justify-between w-full text-gray-300 hover:text-white py-1.5"
+                      >
+                        <span className="flex items-center">
+                          <div className="w-6 h-6 rounded-full bg-sidebar-primary flex-shrink-0 flex items-center justify-center overflow-hidden mr-2">
+                            {community.icon ? (
+                              <img 
+                                src={community.icon} 
+                                alt={`${community.name} icon`} 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-xs font-bold">r/</span>
+                            )}
+                          </div>
+                          <span>r/{community.name}</span>
+                        </span>
                         <span className="text-xs text-gray-500">{formatMemberCount(community.memberCount)}</span>
                       </Link>
                     </DropdownMenuItem>
@@ -134,31 +152,17 @@ const Header = () => {
                 <DropdownMenuSeparator className="bg-sidebar-border" />
                 <DropdownMenuLabel className="text-white">Feeds</DropdownMenuLabel>
                 <DropdownMenuItem asChild>
-                  <Link to="/" className="text-gray-300 hover:text-white">Home</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/news" className="text-gray-300 hover:text-white flex items-center">
-                    <Newspaper size={16} className="mr-2" />
-                    Startup News
+                  <Link to="/" className="flex items-center text-gray-300 hover:text-white">
+                    <Home size={16} className="mr-2" />
+                    <span>Home</span>
                   </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/unicorns-india" className="text-gray-300 hover:text-white flex items-center">
-                    <Building2 size={16} className="mr-2" />
-                    Unicorns in India
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/?sort=top" className="text-gray-300 hover:text-white">Popular</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/?sort=new" className="text-gray-300 hover:text-white">All</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-sidebar-border" />
+                <DropdownMenuLabel className="text-white">More</DropdownMenuLabel>
                 <DropdownMenuItem asChild>
-                  <Link to="/submit" className="flex items-center text-gray-300 hover:text-white">
+                  <Link to="/r/create" className="flex items-center text-gray-300 hover:text-white">
                     <Plus size={16} className="mr-2" />
-                    Create Post
+                    <span>Create Community</span>
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -166,22 +170,23 @@ const Header = () => {
           </div>
         </div>
         
-        {/* Search */}
-        <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl mx-4">
+        {/* Search bar */}
+        <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-4">
           <div className="relative w-full">
-            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input 
-              type="text" 
-              placeholder="Search Moonmovemt" 
-              className="pl-10 bg-sidebar-accent border-sidebar-border focus:bg-sidebar text-white w-full"
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Search communities and posts"
+              className="pl-9 bg-sidebar-accent border-sidebar-border text-sidebar-foreground focus:ring-sidebar-primary focus:border-sidebar-primary"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </form>
         
-        {/* Actions */}
+        {/* Right section */}
         <div className="flex items-center space-x-1">
+          {/* Add navigation links here */}
           <Link to="/news" className="mr-2">
             <Button variant="ghost" size="sm" className="hidden sm:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
               <Newspaper size={16} className="mr-2" />
@@ -210,55 +215,49 @@ const Header = () => {
                   <Plus size={20} />
                 </Button>
               </Link>
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full h-8 w-8 ml-2 text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                  <Button variant="ghost" size="icon" className="text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                     <User size={20} />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-sidebar border-sidebar-border">
-                  <DropdownMenuLabel className="text-white">
-                    {user?.username || 'My Account'}
+                <DropdownMenuContent align="end" className="w-48 bg-sidebar border-sidebar-border">
+                  <DropdownMenuLabel className="text-sidebar-foreground">
+                    {user?.username || 'User'}
                   </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-sidebar-border" />
                   <DropdownMenuItem asChild>
-                    <Link to={`/user/${user?.username}`} className="text-gray-300 hover:text-white">My Account</Link>
+                    <Link to="/profile" className="text-gray-300 hover:text-white">Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/settings" className="text-gray-300 hover:text-white">Settings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-sidebar-border" />
-                  <DropdownMenuItem onClick={handleLogout} className="text-gray-300 hover:text-white">Logout</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="text-gray-300 hover:text-white cursor-pointer">
+                    Logout
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </>
           ) : (
-            <div className="flex items-center space-x-2">
+            <>
               <Link to="/auth?mode=login">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="hidden md:flex border-sidebar-border bg-transparent text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                >
+                <Button variant="outline" size="sm" className="hidden md:flex border-sidebar-border bg-transparent text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                   Log In
                 </Button>
               </Link>
               <Link to="/auth?mode=signup">
-                <Button 
-                  size="sm" 
-                  className="bg-sidebar-primary hover:bg-sidebar-primary/90 text-white"
-                >
+                <Button size="sm" className="bg-sidebar-primary hover:bg-sidebar-primary/90 text-white">
                   Sign Up
                 </Button>
               </Link>
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                  <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                     <Menu size={20} />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-sidebar border-sidebar-border">
+                <DropdownMenuContent align="end" className="w-48 bg-sidebar border-sidebar-border">
                   <DropdownMenuItem asChild>
                     <Link to="/auth?mode=login" className="text-gray-300 hover:text-white">Log In</Link>
                   </DropdownMenuItem>
@@ -267,7 +266,7 @@ const Header = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
+            </>
           )}
         </div>
       </div>

@@ -32,32 +32,45 @@ const Community = () => {
       
       try {
         setLoading(true);
-        const response = await fetch('https://moonmovement.onrender.com/api/community');
-        if (!response.ok) {
-          throw new Error('Failed to fetch communities');
-        }
-        const communities = await response.json();
-        const foundCommunity = communities.find((c: Community) => c.name === communityName);
+        setError(null);
         
-        if (foundCommunity) {
-          setCommunity(foundCommunity);
-          
-          // Check membership if user is logged in
-          if (isLoggedIn) {
-            const token = localStorage.getItem('token');
-            const membershipResponse = await fetch(`https://moonmovement.onrender.com/api/community/${foundCommunity.id}/membership`, {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            });
-            
-            if (membershipResponse.ok) {
-              const membershipData = await membershipResponse.json();
-              setIsMember(membershipData.isMember);
-            }
-          }
+        // First attempt: try to fetch specific community by name
+        const response = await fetch(`https://moonmovement.onrender.com/api/community/name/${communityName}`);
+        
+        // If the specific endpoint doesn't exist, fall back to fetching all communities
+        if (response.ok) {
+          const communityData = await response.json();
+          setCommunity(communityData);
         } else {
-          setError('Community not found');
+          // Fallback: fetch all communities and filter
+          const allCommunitiesResponse = await fetch('https://moonmovement.onrender.com/api/community');
+          if (!allCommunitiesResponse.ok) {
+            throw new Error('Failed to fetch communities');
+          }
+          
+          const communities = await allCommunitiesResponse.json();
+          const foundCommunity = communities.find((c: Community) => c.name === communityName);
+          
+          if (foundCommunity) {
+            setCommunity(foundCommunity);
+          } else {
+            setError('Community not found');
+          }
+        }
+        
+        // Check membership if user is logged in
+        if (isLoggedIn && community?.id) {
+          const token = localStorage.getItem('token');
+          const membershipResponse = await fetch(`https://moonmovement.onrender.com/api/community/${community.id}/membership`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (membershipResponse.ok) {
+            const membershipData = await membershipResponse.json();
+            setIsMember(membershipData.isMember);
+          }
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch community');
