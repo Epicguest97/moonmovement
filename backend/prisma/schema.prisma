@@ -29,6 +29,7 @@ model Post {
   subreddit String
   imageUrl  String?
   linkUrl   String?
+  tags      String?   // Store tags as comma-separated string
   comments  Comment[]
   votes     Vote[]
   createdAt DateTime  @default(now())

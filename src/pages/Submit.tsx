@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ImageIcon, Link2Icon, FileTextIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ImageIcon, Link2Icon, X } from 'lucide-react';
 
 interface Community {
   id: number;
@@ -18,10 +18,6 @@ interface Community {
 }
 
 const Submit = () => {
-  const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get('type') === 'image' ? 'image' : 
-                    searchParams.get('type') === 'link' ? 'link' : 'post';
-  
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -30,6 +26,8 @@ const Submit = () => {
   const [communities, setCommunities] = useState<Community[]>([]);
   const [loading, setLoading] = useState(false);
   const [communitiesLoading, setCommunitiesLoading] = useState(true);
+  const [tags, setTags] = useState<string[]>([]);
+  const [currentTag, setCurrentTag] = useState('');
   const navigate = useNavigate();
 
   const username = localStorage.getItem('username');
@@ -63,6 +61,17 @@ const Submit = () => {
     fetchCommunities();
   }, []);
 
+  const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && currentTag.trim() && !tags.includes(currentTag.trim())) {
+      setTags([...tags, currentTag.trim()]);
+      setCurrentTag('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username) {
@@ -82,8 +91,9 @@ const Submit = () => {
       title,
       content,
       subreddit: selectedCommunity,
-      imageUrl,
-      linkUrl,
+      imageUrl: imageUrl || undefined,
+      linkUrl: linkUrl || undefined,
+      tags,
       author: username,
     };
 
@@ -144,80 +154,88 @@ const Submit = () => {
               </Select>
             </div>
             
-            <div className="p-4">
-              <Tabs defaultValue={initialTab} className="w-full">
-                <TabsList className="w-full mb-4 bg-sidebar-accent">
-                  <TabsTrigger value="post" className="flex-1 data-[state=active]:bg-sidebar text-sidebar-foreground">
-                    <FileTextIcon size={16} className="mr-2" />
-                    Post
-                  </TabsTrigger>
-                  <TabsTrigger value="image" className="flex-1 data-[state=active]:bg-sidebar text-sidebar-foreground">
-                    <ImageIcon size={16} className="mr-2" />
-                    Image
-                  </TabsTrigger>
-                  <TabsTrigger value="link" className="flex-1 data-[state=active]:bg-sidebar text-sidebar-foreground">
-                    <Link2Icon size={16} className="mr-2" />
-                    Link
-                  </TabsTrigger>
-                </TabsList>
-                
-                <div className="mb-4">
-                  <Input
-                    placeholder="Title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="mb-2 bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-gray-400"
-                    maxLength={300}
-                    required
-                  />
-                  <div className="text-xs text-gray-500 text-right">
-                    {title.length}/300
-                  </div>
+            <div className="p-4 space-y-4">
+              {/* Title */}
+              <div>
+                <Input
+                  placeholder="Title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-gray-400"
+                  maxLength={300}
+                  required
+                />
+                <div className="text-xs text-gray-500 text-right mt-1">
+                  {title.length}/300
                 </div>
-                
-                <TabsContent value="post">
-                  <Textarea
-                    placeholder="Text (optional)"
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    className="min-h-[200px] resize-y bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-gray-400"
-                  />
-                </TabsContent>
-                
-                <TabsContent value="image">
-                  <div className="border-2 border-dashed border-sidebar-border rounded-md p-4 text-center mb-4">
-                    <ImageIcon size={48} className="mx-auto mb-2 text-gray-400" />
-                    <p className="mb-2 text-sm text-gray-400">Drag and drop images or</p>
-                    <Button type="button" variant="outline" size="sm" className="border-sidebar-border text-sidebar-foreground hover:bg-sidebar-accent">
-                      Upload
-                    </Button>
-                    <input 
-                      type="file" 
-                      className="hidden" 
-                      accept="image/*" 
-                    />
+              </div>
+
+              {/* Tags */}
+              <div>
+                <Input
+                  placeholder="Add tags (press Enter to add)"
+                  value={currentTag}
+                  onChange={(e) => setCurrentTag(e.target.value)}
+                  onKeyDown={handleAddTag}
+                  className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-gray-400"
+                />
+                {tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {tags.map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="bg-sidebar-accent text-sidebar-foreground">
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="ml-1 hover:text-red-400"
+                        >
+                          <X size={12} />
+                        </button>
+                      </Badge>
+                    ))}
                   </div>
-                  <p className="text-sm text-gray-400">Or paste an image URL:</p>
-                  <Input
-                    placeholder="Image URL"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    className="mt-2 bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-gray-400"
-                    type="url"
-                  />
-                </TabsContent>
-                
-                <TabsContent value="link">
-                  <Input
-                    placeholder="URL"
-                    value={linkUrl}
-                    onChange={(e) => setLinkUrl(e.target.value)}
-                    type="url"
-                    required={initialTab === 'link'}
-                    className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-gray-400"
-                  />
-                </TabsContent>
-              </Tabs>
+                )}
+              </div>
+
+              {/* Content */}
+              <div>
+                <Textarea
+                  placeholder="Text (optional)"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="min-h-[200px] resize-y bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-gray-400"
+                />
+              </div>
+
+              {/* Image URL */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <ImageIcon size={16} className="text-gray-400" />
+                  <label className="text-sm text-gray-400">Image URL (optional)</label>
+                </div>
+                <Input
+                  placeholder="https://example.com/image.jpg"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-gray-400"
+                  type="url"
+                />
+              </div>
+
+              {/* Link URL */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Link2Icon size={16} className="text-gray-400" />
+                  <label className="text-sm text-gray-400">Link URL (optional)</label>
+                </div>
+                <Input
+                  placeholder="https://example.com"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  className="bg-sidebar-accent border-sidebar-border text-sidebar-foreground placeholder:text-gray-400"
+                  type="url"
+                />
+              </div>
             </div>
           </Card>
           

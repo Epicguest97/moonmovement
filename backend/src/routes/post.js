@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const prisma = require('../utils/prisma');
@@ -32,7 +33,7 @@ router.get('/:id', async (req, res) => {
 
 // POST a new post
 router.post('/', async (req, res) => {
-  const { title, content, subreddit, author, imageUrl, linkUrl } = req.body;
+  const { title, content, subreddit, author, imageUrl, linkUrl, tags } = req.body;
   try {
     const user = await prisma.user.findUnique({ where: { username: author } });
     if (!user) return res.status(400).json({ error: 'Author not found' });
@@ -44,6 +45,7 @@ router.post('/', async (req, res) => {
         subreddit,
         imageUrl,
         linkUrl,
+        tags: tags ? tags.join(',') : null, // Store tags as comma-separated string
       },
       include: { author: true, comments: true, votes: true }
     });
@@ -57,11 +59,15 @@ router.post('/', async (req, res) => {
 // PUT (update) a post by id
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { title, content } = req.body;
+  const { title, content, tags } = req.body;
   try {
     const updated = await prisma.post.update({
       where: { id: Number(id) },
-      data: { title, content },
+      data: { 
+        title, 
+        content,
+        tags: tags ? tags.join(',') : null
+      },
       include: { author: true, comments: true, votes: true }
     });
     res.json(updated);

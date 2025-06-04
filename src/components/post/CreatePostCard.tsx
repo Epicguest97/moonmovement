@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ImageIcon, LinkIcon } from 'lucide-react';
 
 const CreatePostCard = () => {
   return (
@@ -24,20 +22,6 @@ const CreatePostCard = () => {
             readOnly
           />
         </Link>
-        
-        <div className="flex ml-2">
-          <Link to="/submit?type=image">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-              <ImageIcon size={20} />
-            </Button>
-          </Link>
-          
-          <Link to="/submit?type=link">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
-              <LinkIcon size={20} />
-            </Button>
-          </Link>
-        </div>
       </div>
     </Card>
   );
