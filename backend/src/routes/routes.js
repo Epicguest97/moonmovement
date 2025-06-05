@@ -1,41 +1,23 @@
+
 const express = require('express');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const postRoutes = require('./post');
+const authRoutes = require('./auth');
+const commentRoutes = require('./comments');
+const communityRoutes = require('./community');
+const newsRoutes = require('./news');
+const startupRoutes = require('./startups');
+const searchRoutes = require('./search');
+const userActivityRoutes = require('./userActivity');
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-// Signup
-router.post('/signup', async (req, res) => {
-  const { email, username, password } = req.body;
-  if (!email || !username || !password) return res.status(400).json({ error: 'Missing fields' });
-
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) return res.status(400).json({ error: 'Email already in use' });
-
-  const hash = await bcrypt.hash(password, 10);
-  const user = await prisma.user.create({
-    data: { email, username, password: hash }
-  });
-
-  res.json({ id: user.id, email: user.email, username: user.username });
-});
-
-// Login
-router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
-
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
-
-  const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '1d' });
-  res.json({ token, user: { id: user.id, email: user.email, username: user.username } });
-});
+router.use('/posts', postRoutes);
+router.use('/auth', authRoutes);
+router.use('/comments', commentRoutes);
+router.use('/community', communityRoutes);
+router.use('/news', newsRoutes);
+router.use('/startups', startupRoutes);
+router.use('/search', searchRoutes);
+router.use('/user-activity', userActivityRoutes);
 
 module.exports = router;

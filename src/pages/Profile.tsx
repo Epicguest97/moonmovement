@@ -1,15 +1,13 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Mail, Calendar, Edit, Save, X } from 'lucide-react';
+import { User, Mail, Calendar, Edit, Save, X, TrendingUp, MessageSquare, ThumbsUp, Users } from 'lucide-react';
 
 interface UserProfile {
   id: number;
@@ -37,11 +35,30 @@ interface Post {
   comments: any[];
 }
 
+interface UserActivity {
+  id: number;
+  activityType: string;
+  description: string;
+  points: number;
+  metadata?: string;
+  createdAt: string;
+}
+
+interface ActivityStats {
+  totalKarma: number;
+  posts: number;
+  comments: number;
+  votes: number;
+  communitiesJoined: number;
+  activities: UserActivity[];
+}
+
 const Profile = () => {
   const { user, isLoggedIn } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [joinedCommunities, setJoinedCommunities] = useState<Community[]>([]);
   const [userPosts, setUserPosts] = useState<Post[]>([]);
+  const [activityStats, setActivityStats] = useState<ActivityStats | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedBio, setEditedBio] = useState('');
   const [loading, setLoading] = useState(true);
@@ -53,7 +70,7 @@ const Profile = () => {
       try {
         setLoading(true);
         
-        // Set basic profile from auth context - fix the type issue
+        // Set basic profile from auth context
         setProfile({
           id: typeof user.id === 'number' ? user.id : parseInt(user.id?.toString() || '1'),
           username: user.username,
@@ -62,9 +79,23 @@ const Profile = () => {
           createdAt: new Date().toISOString()
         });
 
-        // Fetch joined communities
         const token = localStorage.getItem('token');
+        
+        // Fetch user activities
         if (token) {
+          const userId = typeof user.id === 'number' ? user.id : parseInt(user.id?.toString() || '1');
+          const activitiesResponse = await fetch(`https://moonmovement.onrender.com/api/user-activity/${userId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (activitiesResponse.ok) {
+            const activities = await activitiesResponse.json();
+            setActivityStats(activities);
+          }
+
+          // Fetch joined communities
           const communitiesResponse = await fetch('https://moonmovement.onrender.com/api/community', {
             headers: {
               'Authorization': `Bearer ${token}`
@@ -73,7 +104,7 @@ const Profile = () => {
           
           if (communitiesResponse.ok) {
             const communities = await communitiesResponse.json();
-            setJoinedCommunities(communities.slice(0, 3)); // Show first 3 for demo
+            setJoinedCommunities(communities.slice(0, 3));
           }
         }
 
@@ -124,6 +155,36 @@ const Profile = () => {
       const postKarma = post.votes.reduce((sum, vote) => sum + vote.type, 0);
       return total + postKarma;
     }, 0);
+  };
+
+  const getActivityIcon = (activityType: string) => {
+    switch (activityType) {
+      case 'post_created':
+        return <MessageSquare size={16} className="text-blue-400" />;
+      case 'comment_created':
+        return <MessageSquare size={16} className="text-green-400" />;
+      case 'vote_cast':
+        return <ThumbsUp size={16} className="text-orange-400" />;
+      case 'community_joined':
+        return <Users size={16} className="text-purple-400" />;
+      default:
+        return <TrendingUp size={16} className="text-gray-400" />;
+    }
+  };
+
+  const getActivityTypeLabel = (activityType: string) => {
+    switch (activityType) {
+      case 'post_created':
+        return 'Created post';
+      case 'comment_created':
+        return 'Added comment';
+      case 'vote_cast':
+        return 'Cast vote';
+      case 'community_joined':
+        return 'Joined community';
+      default:
+        return activityType;
+    }
   };
 
   if (!isLoggedIn) {
@@ -238,8 +299,8 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {/* Enhanced Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           <Card className="bg-sidebar border-sidebar-border">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-sidebar-foreground">{userPosts.length}</div>
@@ -249,8 +310,28 @@ const Profile = () => {
           
           <Card className="bg-sidebar border-sidebar-border">
             <CardContent className="p-4 text-center">
-              <div className="text-2xl font-bold text-sidebar-foreground">{calculateKarma(userPosts)}</div>
+              <div className="text-2xl font-bold text-sidebar-foreground">
+                {activityStats?.totalKarma || calculateKarma(userPosts)}
+              </div>
               <div className="text-gray-300">Karma</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-sidebar border-sidebar-border">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-sidebar-foreground">
+                {activityStats?.comments || 0}
+              </div>
+              <div className="text-gray-300">Comments</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-sidebar border-sidebar-border">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-sidebar-foreground">
+                {activityStats?.votes || 0}
+              </div>
+              <div className="text-gray-300">Votes</div>
             </CardContent>
           </Card>
           
@@ -267,6 +348,9 @@ const Profile = () => {
           <TabsList className="bg-sidebar border border-sidebar-border">
             <TabsTrigger value="posts" className="data-[state=active]:bg-sidebar-accent text-sidebar-foreground">
               Posts
+            </TabsTrigger>
+            <TabsTrigger value="activities" className="data-[state=active]:bg-sidebar-accent text-sidebar-foreground">
+              Activity
             </TabsTrigger>
             <TabsTrigger value="communities" className="data-[state=active]:bg-sidebar-accent text-sidebar-foreground">
               Communities
@@ -304,6 +388,44 @@ const Profile = () => {
                     >
                       Create Your First Post
                     </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="activities">
+            <Card className="bg-sidebar border-sidebar-border">
+              <CardHeader>
+                <CardTitle className="text-sidebar-foreground">Recent Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {activityStats?.activities && activityStats.activities.length > 0 ? (
+                  <div className="space-y-3">
+                    {activityStats.activities.slice(0, 20).map((activity) => (
+                      <div key={activity.id} className="flex items-center gap-3 p-3 border border-sidebar-border rounded-lg">
+                        {getActivityIcon(activity.activityType)}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sidebar-foreground font-medium">
+                              {getActivityTypeLabel(activity.activityType)}
+                            </span>
+                            {activity.points > 0 && (
+                              <Badge variant="outline" className="border-green-500 text-green-400 text-xs">
+                                +{activity.points} karma
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-gray-300 text-sm">{activity.description}</p>
+                          <span className="text-gray-500 text-xs">{formatDate(activity.createdAt)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-400">
+                    <p>No activity recorded yet.</p>
+                    <p className="text-sm mt-2">Start posting and commenting to see your activity here!</p>
                   </div>
                 )}
               </CardContent>
