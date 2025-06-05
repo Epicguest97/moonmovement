@@ -37,9 +37,11 @@ const Community = () => {
         // First attempt: try to fetch specific community by name
         const response = await fetch(`https://moonmovement.onrender.com/api/community/name/${communityName}`);
         
+        let communityData;
+        
         // If the specific endpoint doesn't exist, fall back to fetching all communities
         if (response.ok) {
-          const communityData = await response.json();
+          communityData = await response.json();
           setCommunity(communityData);
         } else {
           // Fallback: fetch all communities and filter
@@ -49,19 +51,20 @@ const Community = () => {
           }
           
           const communities = await allCommunitiesResponse.json();
-          const foundCommunity = communities.find((c: Community) => c.name === communityName);
+          communityData = communities.find((c: Community) => c.name === communityName);
           
-          if (foundCommunity) {
-            setCommunity(foundCommunity);
+          if (communityData) {
+            setCommunity(communityData);
           } else {
             setError('Community not found');
+            return; // Exit early if no community found
           }
         }
         
-        // Check membership if user is logged in
-        if (isLoggedIn && community?.id) {
+        // Check membership if user is logged in - use the local variable
+        if (isLoggedIn && communityData?.id) {
           const token = localStorage.getItem('token');
-          const membershipResponse = await fetch(`https://moonmovement.onrender.com/api/community/${community.id}/membership`, {
+          const membershipResponse = await fetch(`https://moonmovement.onrender.com/api/community/${communityData.id}/membership`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
