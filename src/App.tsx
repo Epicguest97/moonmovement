@@ -40,6 +40,7 @@ function App() {
           <Route path="/post/:id" element={<PostDetail />} />
           <Route path="/search" element={<Search />} />
           <Route path="/news" element={<News />} />
+          <Route path="/communities" element={<ManageCommunities />} />
           <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/startup-news" element={<StartupNews />} />
           <Route path="/startup/:id" element={<StartupDetail />} />
