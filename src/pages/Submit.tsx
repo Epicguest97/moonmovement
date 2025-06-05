@@ -94,8 +94,7 @@ const Submit = () => {
       subreddit: selectedCommunity,
       imageUrl: imageUrl || undefined,
       linkUrl: linkUrl || undefined,
-      tags,
-      // Don't need to send author - server will determine this from token
+      tags: tags.length > 0 ? tags.join(',') : null, // Convert array to comma-separated string
     };
 
     try {
