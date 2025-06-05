@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -74,7 +73,9 @@ const Submit = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username) {
+    
+    const token = localStorage.getItem('token');
+    if (!token || !username) {
       alert('You must be signed in to create a post.');
       navigate('/auth');
       return;
@@ -94,20 +95,24 @@ const Submit = () => {
       imageUrl: imageUrl || undefined,
       linkUrl: linkUrl || undefined,
       tags,
-      author: username,
+      // Don't need to send author - server will determine this from token
     };
 
     try {
       const response = await fetch('https://moonmovement.onrender.com/api/posts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Add the authorization token
+        },
         body: JSON.stringify(postData),
       });
 
       if (response.ok) {
         navigate('/');
       } else {
-        alert('Failed to submit post');
+        const errorData = await response.json();
+        alert('Failed to submit post: ' + (errorData.error || 'Unknown error'));
       }
     } catch (err) {
       console.error('Error submitting post:', err);
