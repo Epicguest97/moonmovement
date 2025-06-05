@@ -57,9 +57,9 @@ router.post('/login', async (req, res) => {
 // Google Authentication
 router.post('/google', async (req, res) => {
   const { tokenId, credential } = req.body;
-  const token = tokenId || credential;
+  const googleToken = tokenId || credential;
   
-  if (!token) {
+  if (!googleToken) {
     return res.status(400).json({ error: 'No token provided' });
   }
   
@@ -67,7 +67,7 @@ router.post('/google', async (req, res) => {
     console.log('Processing Google authentication token');
     
     const ticket = await googleClient.verifyIdToken({
-      idToken: token,
+      idToken: googleToken,
       audience: GOOGLE_CLIENT_ID
     });
     
@@ -117,12 +117,12 @@ router.post('/google', async (req, res) => {
       });
     }
     
-    // Generate token
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    // Generate JWT token (renamed to avoid conflict)
+    const jwtToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
     
     // Return user data and token
     res.json({ 
-      token, 
+      token: jwtToken, 
       user: { 
         id: user.id, 
         email: user.email, 
