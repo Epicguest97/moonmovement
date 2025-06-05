@@ -1,23 +1,26 @@
 
 const express = require('express');
-const postRoutes = require('./post');
 const authRoutes = require('./auth');
+const postRoutes = require('./post');
 const commentRoutes = require('./comments');
-const communityRoutes = require('./community');
 const newsRoutes = require('./news');
 const startupRoutes = require('./startups');
-const searchRoutes = require('./search');
+const communityRoutes = require('./community');
 const userActivityRoutes = require('./userActivity');
+const searchRoutes = require('./search');
+const userSettingsRoutes = require('./userSettings');
 
 const router = express.Router();
 
-router.use('/posts', postRoutes);
+// Mount routes
 router.use('/auth', authRoutes);
-router.use('/comments', commentRoutes);
-router.use('/community', communityRoutes);
+router.use('/auth', userSettingsRoutes); // Mount user settings under /auth
+router.use('/', postRoutes);
+router.use('/', commentRoutes);
 router.use('/news', newsRoutes);
 router.use('/startups', startupRoutes);
-router.use('/search', searchRoutes);
+router.use('/community', communityRoutes);
 router.use('/user-activity', userActivityRoutes);
+router.use('/search', searchRoutes);
 
 module.exports = router;
