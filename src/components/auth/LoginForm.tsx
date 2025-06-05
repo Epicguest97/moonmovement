@@ -31,14 +31,24 @@ const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
+
+  // Ensure we're starting with a fresh session
+  useEffect(() => {
+    // Log out existing user to prevent session conflicts
+    logout();
+  }, [logout]);
 
   useEffect(() => {
     // Initialize Google Sign-In
     if (window.google) {
+      const currentDomain = window.location.origin;
+      
       window.google.accounts.id.initialize({
-        client_id: '123456789-example.apps.googleusercontent.com', // Replace with your actual Google Client ID
-        callback: handleGoogleResponse
+        client_id: '971351411666-mq31r82qcak4iarqdq5gfr4k4741f4cq.apps.googleusercontent.com',
+        callback: handleGoogleResponse,
+        ux_mode: 'popup', // Use popup to avoid redirect issues
+        cancel_on_tap_outside: true
       });
       
       // Render the button
@@ -53,19 +63,30 @@ const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
     setIsLoading(true);
     setError('');
     
+    console.log('Google response:', response); // Debug response object
+    
     try {
       const res = await fetch('https://moonmovement.onrender.com/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tokenId: response.credential })
+        body: JSON.stringify({ 
+          tokenId: response.credential,
+          credential: response.credential // Send both for backward compatibility
+        })
       });
       
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Google login failed');
+      // Check for network errors
+      if (!res.ok) {
+        const data = await res.json();
+        console.error('Server response:', data);
+        throw new Error(data.error || data.details || 'Google login failed');
+      }
       
+      const data = await res.json();
       login(data.user, data.token);
       navigate('/home');
     } catch (err: any) {
+      console.error('Auth error:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);
