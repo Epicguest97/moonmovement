@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,20 @@ interface SignupFormProps {
   onSwitchToLogin: () => void;
 }
 
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          renderButton: (element: HTMLElement, options: any) => void;
+          prompt: () => void;
+        }
+      }
+    }
+  }
+}
+
 const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -19,6 +33,45 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  useEffect(() => {
+    // Initialize Google Sign-In
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: '123456789-example.apps.googleusercontent.com', // Replace with your actual Google Client ID
+        callback: handleGoogleResponse
+      });
+      
+      // Render the button
+      window.google.accounts.id.renderButton(
+        document.getElementById("googleSignUpButton")!,
+        { theme: "outline", size: "large", width: 250, text: "signup_with" }
+      );
+    }
+  }, []);
+
+  const handleGoogleResponse = async (response: any) => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const res = await fetch('https://moonmovement.onrender.com/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tokenId: response.credential })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Google signup failed');
+      
+      login(data.user, data.token);
+      navigate('/home');
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,6 +172,19 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
           >
             {isLoading ? 'Creating account...' : 'Sign Up'}
           </Button>
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-sidebar-border"></span>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-sidebar px-2 text-gray-400">Or continue with</span>
+            </div>
+          </div>
+          
+          <div className="flex justify-center">
+            <div id="googleSignUpButton"></div>
+          </div>
         </form>
         
         <div className="mt-6 text-center">

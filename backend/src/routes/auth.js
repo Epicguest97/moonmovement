@@ -3,9 +3,11 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const { JWT_SECRET, JWT_EXPIRES_IN } = require('../config');
+const { JWT_SECRET, JWT_EXPIRES_IN, GOOGLE_CLIENT_ID } = require('../config');
+const { OAuth2Client } = require('google-auth-library');
 
 const router = express.Router();
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // Signup
 router.post('/signup', async (req, res) => {
@@ -52,4 +54,74 @@ router.post('/login', async (req, res) => {
   }
 });
 
-module.exports = router; 
+// Google Authentication
+router.post('/google', async (req, res) => {
+  const { tokenId } = req.body;
+  
+  try {
+    // Verify Google token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokenId,
+      audience: GOOGLE_CLIENT_ID
+    });
+    
+    const { email, name, picture } = ticket.getPayload();
+    
+    // Check if user exists
+    let user = await prisma.user.findUnique({
+      where: { email }
+    });
+    
+    // If user doesn't exist, create a new one
+    if (!user) {
+      // Generate username from email (before the @)
+      let username = email.split('@')[0];
+      
+      // Check if username exists, if so, add random numbers
+      const existingUsername = await prisma.user.findUnique({ 
+        where: { username } 
+      });
+      
+      if (existingUsername) {
+        username = `${username}${Math.floor(1000 + Math.random() * 9000)}`;
+      }
+      
+      // Create new user with random password (they'll login with Google)
+      const randomPassword = Math.random().toString(36).slice(-10);
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      
+      user = await prisma.user.create({
+        data: { 
+          email, 
+          username,
+          password: hashedPassword,
+          googleId: ticket.getUserId()
+        }
+      });
+    } else if (!user.googleId) {
+      // If existing user but first time with Google, update their Google ID
+      user = await prisma.user.update({
+        where: { email },
+        data: { googleId: ticket.getUserId() }
+      });
+    }
+    
+    // Generate token
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    
+    // Return user data and token
+    res.json({ 
+      token, 
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        username: user.username 
+      } 
+    });
+  } catch (err) {
+    console.error('Google auth error:', err);
+    res.status(401).json({ error: 'Invalid Google token' });
+  }
+});
+
+module.exports = router;
