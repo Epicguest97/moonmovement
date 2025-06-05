@@ -56,7 +56,6 @@ router.post('/login', async (req, res) => {
 
 // Google Authentication
 router.post('/google', async (req, res) => {
-  // Look for either tokenId or credential in the request
   const { tokenId, credential } = req.body;
   const token = tokenId || credential;
   
@@ -65,17 +64,19 @@ router.post('/google', async (req, res) => {
   }
   
   try {
-    // Add more debug logging
-    console.log('Received Google auth token:', token ? 'Present' : 'Missing');
-    console.log('Google Client ID being used:', GOOGLE_CLIENT_ID);
+    console.log('Processing Google authentication token');
     
-    // Verify Google token
     const ticket = await googleClient.verifyIdToken({
       idToken: token,
       audience: GOOGLE_CLIENT_ID
     });
     
-    const { email, name, picture } = ticket.getPayload();
+    const payload = ticket.getPayload();
+    const { email, name } = payload;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email not provided by Google' });
+    }
     
     // Check if user exists
     let user = await prisma.user.findUnique({
@@ -130,7 +131,38 @@ router.post('/google', async (req, res) => {
     });
   } catch (err) {
     console.error('Google auth error details:', err);
-    res.status(401).json({ error: 'Invalid Google token', details: err.message });
+    res.status(401).json({ 
+      error: 'Invalid Google token', 
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
+});
+
+// Add this route for handling Google OAuth callback
+router.get('/google/callback', async (req, res) => {
+  const { code } = req.query;
+  
+  try {
+    // Exchange code for tokens
+    const { tokens } = await googleClient.getToken(code);
+    const idToken = tokens.id_token;
+    
+    // Verify ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: GOOGLE_CLIENT_ID
+    });
+    
+    const { email, name } = ticket.getPayload();
+    
+    // Process user authentication...
+    
+    // Redirect to frontend with token
+    res.redirect(`https://moonmovement.onrender.com/auth?token=${tokens.access_token}`);
+  } catch (err) {
+    console.error('Google callback error:', err);
+    res.redirect('https://moonmovement.onrender.com/auth?error=google_auth_failed');
   }
 });
 

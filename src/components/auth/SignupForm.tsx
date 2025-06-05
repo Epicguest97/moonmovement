@@ -39,7 +39,9 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
     if (window.google) {
       window.google.accounts.id.initialize({
         client_id: '971351411666-mq31r82qcak4iarqdq5gfr4k4741f4cq.apps.googleusercontent.com',
-        callback: handleGoogleResponse
+        callback: handleGoogleResponse,
+        ux_mode: 'popup', // Use popup to avoid redirect issues
+        cancel_on_tap_outside: true
       });
       
       // Render the button
