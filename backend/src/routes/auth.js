@@ -156,13 +156,60 @@ router.get('/google/callback', async (req, res) => {
     
     const { email, name } = ticket.getPayload();
     
-    // Process user authentication...
+    // Check if user exists
+    let user = await prisma.user.findUnique({
+      where: { email }
+    });
+    
+    // If user doesn't exist, create a new one
+    if (!user) {
+      // Generate username from email (before the @)
+      let username = email.split('@')[0];
+      
+      // Check if username exists, if so, add random numbers
+      const existingUsername = await prisma.user.findUnique({ 
+        where: { username } 
+      });
+      
+      if (existingUsername) {
+        username = `${username}${Math.floor(1000 + Math.random() * 9000)}`;
+      }
+      
+      // Create new user with random password (they'll login with Google)
+      const randomPassword = Math.random().toString(36).slice(-10);
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      
+      user = await prisma.user.create({
+        data: { 
+          email, 
+          username,
+          password: hashedPassword,
+          googleId: ticket.getUserId()
+        }
+      });
+    }
+    
+    // Generate token
+    const authToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    
+    // Determine which domain to redirect to based on request origin or environment
+    const referrer = req.get('Referrer') || '';
+    let redirectDomain;
+    
+    if (referrer.includes('vercel.app')) {
+      redirectDomain = 'https://moonmovement.vercel.app';
+    } else if (referrer.includes('onrender.com')) {
+      redirectDomain = 'https://moonmovement.onrender.com';
+    } else {
+      // Default or local development
+      redirectDomain = process.env.FRONTEND_URL || 'https://moonmovement.onrender.com';
+    }
     
     // Redirect to frontend with token
-    res.redirect(`https://moonmovement.onrender.com/auth?token=${tokens.access_token}`);
+    res.redirect(`${redirectDomain}/auth?token=${authToken}`);
   } catch (err) {
     console.error('Google callback error:', err);
-    res.redirect('https://moonmovement.onrender.com/auth?error=google_auth_failed');
+    res.redirect('https://moonmovement.vercel.app/auth?error=google_auth_failed');
   }
 });
 

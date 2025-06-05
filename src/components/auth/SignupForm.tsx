@@ -37,6 +37,8 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
   useEffect(() => {
     // Initialize Google Sign-In
     if (window.google) {
+      const currentDomain = window.location.origin;
+      
       window.google.accounts.id.initialize({
         client_id: '971351411666-mq31r82qcak4iarqdq5gfr4k4741f4cq.apps.googleusercontent.com',
         callback: handleGoogleResponse,
