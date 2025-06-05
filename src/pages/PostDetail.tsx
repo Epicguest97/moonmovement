@@ -175,8 +175,10 @@ const PostDetail = () => {
     const replyData = {
       content,
       postId: post.id,
-      parentId: Number(parentId)
+      parentId: parseInt(parentId) // Make sure this is converted to a number
     };
+    
+    console.log('Submitting reply data:', replyData);
     
     try {
       const res = await fetch('https://moonmovement.onrender.com/api/comments', {
@@ -190,11 +192,12 @@ const PostDetail = () => {
       
       if (!res.ok) {
         const errorData = await res.json();
+        console.error('Server error:', errorData);
         throw new Error(errorData.error || 'Failed to submit reply');
       }
       
       // Refresh comments to get the updated nested structure
-      const commentsRes = await fetch(`https://moonmovement.onrender.com/api/comments/post/${id}`);
+      const commentsRes = await fetch(`https://moonmovement.onrender.com/api/comments/post/${post.id}`);
       const commentsData = await commentsRes.json();
       const nestedComments = buildCommentTree(commentsData);
       setComments(nestedComments);

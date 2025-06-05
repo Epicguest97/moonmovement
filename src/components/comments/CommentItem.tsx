@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -46,14 +45,23 @@ const Comment = ({ comment, depth = 0, postId, onReplySubmit }: CommentProps) =>
   const handleReplySubmit = async () => {
     if (!replyText.trim() || isSubmitting) return;
     
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You must be logged in to reply');
+      return;
+    }
+    
     setIsSubmitting(true);
     try {
+      console.log('Submitting reply to comment ID:', comment.id);
+      console.log('Reply text:', replyText);
+      
       await onReplySubmit(comment.id, replyText);
       setReplyText('');
       setIsReplying(false);
     } catch (error) {
       console.error('Failed to submit reply:', error);
-      alert('Failed to submit reply');
+      alert('Failed to submit reply. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
