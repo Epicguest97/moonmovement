@@ -54,19 +54,30 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
     setIsLoading(true);
     setError('');
     
+    console.log('Google response:', response); // Debug response object
+    
     try {
       const res = await fetch('https://moonmovement.onrender.com/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tokenId: response.credential })
+        body: JSON.stringify({ 
+          tokenId: response.credential,
+          credential: response.credential // Send both for backward compatibility
+        })
       });
       
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Google signup failed');
+      // Check for network errors
+      if (!res.ok) {
+        const data = await res.json();
+        console.error('Server response:', data);
+        throw new Error(data.error || data.details || 'Google signup failed');
+      }
       
+      const data = await res.json();
       login(data.user, data.token);
       navigate('/home');
     } catch (err: any) {
+      console.error('Auth error:', err);
       setError(err.message);
     } finally {
       setIsLoading(false);

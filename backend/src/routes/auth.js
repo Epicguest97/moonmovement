@@ -56,16 +56,22 @@ router.post('/login', async (req, res) => {
 
 // Google Authentication
 router.post('/google', async (req, res) => {
-  const { tokenId } = req.body;
+  // Look for either tokenId or credential in the request
+  const { tokenId, credential } = req.body;
+  const token = tokenId || credential;
+  
+  if (!token) {
+    return res.status(400).json({ error: 'No token provided' });
+  }
   
   try {
-    // Add debug logging
-    console.log('Received token ID for Google auth:', tokenId ? 'Token present' : 'Token missing');
+    // Add more debug logging
+    console.log('Received Google auth token:', token ? 'Present' : 'Missing');
     console.log('Google Client ID being used:', GOOGLE_CLIENT_ID);
     
     // Verify Google token
     const ticket = await googleClient.verifyIdToken({
-      idToken: tokenId,
+      idToken: token,
       audience: GOOGLE_CLIENT_ID
     });
     
