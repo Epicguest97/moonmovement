@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -92,22 +91,33 @@ const PostDetail = () => {
   
   const handleCommentSubmit = async (commentText: string) => {
     if (!commentText.trim() || !post) return;
-    const username = localStorage.getItem('username');
-    if (!username) {
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
       alert('You must be signed in to comment.');
       return;
     }
+    
     const commentData = {
       content: commentText,
-      author: username,
       postId: post.id,
     };
+    
     try {
       const res = await fetch('https://moonmovement.onrender.com/api/comments', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(commentData),
       });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to submit comment');
+      }
+      
       const newComment = await res.json();
       // Map backend response to CommentType
       const mappedComment = {
@@ -121,7 +131,8 @@ const PostDetail = () => {
       setComments([mappedComment, ...comments]);
       setPost({ ...post, commentCount: post.commentCount + 1 });
     } catch (err) {
-      alert('Failed to submit comment');
+      console.error('Error submitting comment:', err);
+      alert('Failed to submit comment: ' + err.message);
     }
   };
   
