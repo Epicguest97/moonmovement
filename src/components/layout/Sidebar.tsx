@@ -99,7 +99,7 @@ const Sidebar = () => {
       {/* About */}
       <Card className="bg-sidebar border-sidebar-border">
         <CardHeader className="py-3 px-4 font-medium text-white">
-          About Reeddit
+          About MoonMovement
         </CardHeader>
         <CardContent className="px-4 py-2 text-sm text-gray-300">
           <p className="mb-2">Your front page for what's new and trending online!</p>
