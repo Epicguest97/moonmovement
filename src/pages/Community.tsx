@@ -17,6 +17,8 @@ interface Community {
   createdAt: string;
 }
 
+const communityCache = new Map();
+
 const Community = () => {
   const { communityName } = useParams<{ communityName: string }>();
   const { isLoggedIn } = useAuth();
@@ -26,6 +28,23 @@ const Community = () => {
   const [isMember, setIsMember] = useState(false);
   const [membershipLoading, setMembershipLoading] = useState(false);
 
+  const fetchWithTimeout = async (url: string, options = {}, timeout = 10000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (err) {
+    clearTimeout(id);
+    throw err;
+  }
+};
+
   useEffect(() => {
     const fetchCommunity = async () => {
       if (!communityName) return;
@@ -34,8 +53,31 @@ const Community = () => {
         setLoading(true);
         setError(null);
         
+        // Check cache first
+        if (communityCache.has(communityName)) {
+          const cachedData = communityCache.get(communityName);
+          setCommunity(cachedData);
+          
+          // Still check membership as that's user-specific
+          if (isLoggedIn && cachedData.id) {
+            const token = localStorage.getItem('token');
+            const membershipResponse = await fetch(`https://moonmovement.onrender.com/api/community/${cachedData.id}/membership`, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            
+            if (membershipResponse.ok) {
+              const membershipData = await membershipResponse.json();
+              setIsMember(membershipData.isMember);
+            }
+          }
+          
+          return;
+        }
+        
         // First attempt: try to fetch specific community by name
-        const response = await fetch(`https://moonmovement.onrender.com/api/community/name/${communityName}`);
+        const response = await fetchWithTimeout(`https://moonmovement.onrender.com/api/community/name/${communityName}`);
         
         let communityData;
         
@@ -45,7 +87,7 @@ const Community = () => {
           setCommunity(communityData);
         } else {
           // Fallback: fetch all communities and filter
-          const allCommunitiesResponse = await fetch('https://moonmovement.onrender.com/api/community');
+          const allCommunitiesResponse = await fetchWithTimeout('https://moonmovement.onrender.com/api/community');
           if (!allCommunitiesResponse.ok) {
             throw new Error('Failed to fetch communities');
           }
@@ -75,6 +117,9 @@ const Community = () => {
             setIsMember(membershipData.isMember);
           }
         }
+        
+        // After successfully fetching
+        communityCache.set(communityName, communityData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch community');
         console.error('Error fetching community:', err);
