@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -12,10 +13,9 @@ import { CommentType } from '@/components/comments/CommentList';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { subreddits } from '@/data/subredditData';
 
 const PostDetail = () => {
-  const { postId } = useParams<{ postId: string }>();
+  const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<Post | null>(null);
   const [comments, setComments] = useState<CommentType[]>([]);
   const [voteStatus, setVoteStatus] = useState<'up' | 'down' | null>(null);
@@ -24,10 +24,10 @@ const PostDetail = () => {
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    if (postId) {
-      console.log('Fetching post with ID:', postId);
+    if (id) {
+      console.log('Fetching post with ID:', id);
       // Fetch the specific post by ID
-      fetch(`https://moonmovement.onrender.com/api/posts/${postId}`)
+      fetch(`https://moonmovement.onrender.com/api/posts/${id}`)
         .then(res => {
           if (!res.ok) {
             throw new Error('Post not found');
@@ -55,7 +55,7 @@ const PostDetail = () => {
         });
       
       // Fetch comments for this specific post using the new endpoint
-      fetch(`https://moonmovement.onrender.com/api/comments/post/${postId}`)
+      fetch(`https://moonmovement.onrender.com/api/comments/post/${id}`)
         .then(res => res.json())
         .then(data => {
           // Map backend comment fields to CommentType expected by frontend
@@ -73,7 +73,7 @@ const PostDetail = () => {
           console.error('Failed to fetch comments:', error);
         });
     }
-  }, [postId]);
+  }, [id]);
   
   const handleVote = (direction: 'up' | 'down') => {
     if (voteStatus === direction) {
@@ -129,8 +129,8 @@ const PostDetail = () => {
     return (
       <MainLayout>
         <div className="max-w-3xl mx-auto p-4">
-          <div className="bg-sidebar p-10 rounded-md border border-sidebar-border text-center">
-            <h2 className="text-2xl font-bold mb-2 text-white">Loading...</h2>
+          <div className="bg-sidebar p-6 rounded-md border border-sidebar-border text-center">
+            <h2 className="text-lg font-bold mb-2 text-white">Loading...</h2>
             <p className="text-gray-300">Fetching post details...</p>
           </div>
         </div>
@@ -142,8 +142,8 @@ const PostDetail = () => {
     return (
       <MainLayout>
         <div className="max-w-3xl mx-auto p-4">
-          <div className="bg-sidebar p-10 rounded-md border border-sidebar-border text-center">
-            <h2 className="text-2xl font-bold mb-2 text-white">Post Not Found</h2>
+          <div className="bg-sidebar p-6 rounded-md border border-sidebar-border text-center">
+            <h2 className="text-lg font-bold mb-2 text-white">Post Not Found</h2>
             <p className="text-gray-300">
               {error || "The post you're looking for doesn't exist or has been removed."}
             </p>
@@ -159,7 +159,6 @@ const PostDetail = () => {
     );
   }
   
-  const subreddit = subreddits[post.subreddit] || null;
   const authorName = typeof post.author === 'string' ? post.author : post.author.username;
   
   return (
@@ -209,7 +208,7 @@ const PostDetail = () => {
             <CommentList comments={comments} />
           </div>
         ) : (
-          <div className="bg-sidebar rounded-md border border-sidebar-border p-6 text-center">
+          <div className="bg-sidebar rounded-md border border-sidebar-border p-4 text-center">
             <p className="text-gray-400">No comments yet. Be the first to comment!</p>
           </div>
         )}
