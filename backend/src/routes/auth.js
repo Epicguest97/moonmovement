@@ -59,6 +59,10 @@ router.post('/google', async (req, res) => {
   const { tokenId } = req.body;
   
   try {
+    // Add debug logging
+    console.log('Received token ID for Google auth:', tokenId ? 'Token present' : 'Token missing');
+    console.log('Google Client ID being used:', GOOGLE_CLIENT_ID);
+    
     // Verify Google token
     const ticket = await googleClient.verifyIdToken({
       idToken: tokenId,
@@ -119,8 +123,8 @@ router.post('/google', async (req, res) => {
       } 
     });
   } catch (err) {
-    console.error('Google auth error:', err);
-    res.status(401).json({ error: 'Invalid Google token' });
+    console.error('Google auth error details:', err);
+    res.status(401).json({ error: 'Invalid Google token', details: err.message });
   }
 });
 
