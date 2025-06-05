@@ -372,7 +372,7 @@ const Settings = () => {
               </CardContent>
             </Card>
           </TabsContent>
-        </tabs>
+        </Tabs>
       </div>
     </MainLayout>
   );

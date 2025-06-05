@@ -188,13 +188,6 @@ const Header = () => {
         {/* Right section */}
         <div className="flex items-center space-x-1">
           {/* Add navigation links here */}
-          <Link to="/search" className="mr-2">
-            <Button variant="ghost" size="sm" className="hidden sm:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-              <Search size={16} className="mr-2" />
-              Search
-            </Button>
-          </Link>
-
           <Link to="/news" className="mr-2">
             <Button variant="ghost" size="sm" className="hidden sm:flex items-center text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
               <Newspaper size={16} className="mr-2" />
@@ -218,10 +211,6 @@ const Header = () => {
           
           {isLoggedIn ? (
             <>
-              <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" onClick={() => navigate('/search')}>
-                <Search size={20} />
-              </Button>
-              
               <Button variant="ghost" size="icon" className="text-white hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                 <Bell size={20} />
               </Button>
@@ -273,9 +262,6 @@ const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48 bg-sidebar border-sidebar-border">
-                  <DropdownMenuItem asChild>
-                    <Link to="/search" className="text-gray-300 hover:text-white">Search</Link>
-                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/auth?mode=login" className="text-gray-300 hover:text-white">Log In</Link>
                   </DropdownMenuItem>
