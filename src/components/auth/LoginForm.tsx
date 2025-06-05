@@ -42,8 +42,6 @@ const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
   useEffect(() => {
     // Initialize Google Sign-In
     if (window.google) {
-      const currentDomain = window.location.origin;
-      
       window.google.accounts.id.initialize({
         client_id: '971351411666-mq31r82qcak4iarqdq5gfr4k4741f4cq.apps.googleusercontent.com',
         callback: handleGoogleResponse,
@@ -66,12 +64,18 @@ const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
     console.log('Google response:', response); // Debug response object
     
     try {
+      // Make sure credential is available
+      if (!response.credential) {
+        throw new Error('No credential received from Google');
+      }
+      
       const res = await fetch('https://moonmovement.onrender.com/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
+          googleToken: response.credential,  // Match exactly what backend expects
           tokenId: response.credential,
-          credential: response.credential // Send both for backward compatibility
+          credential: response.credential 
         })
       });
       
@@ -83,6 +87,12 @@ const LoginForm = ({ onSwitchToSignup }: LoginFormProps) => {
       }
       
       const data = await res.json();
+      
+      // Double check we got the required data
+      if (!data.token || !data.user) {
+        throw new Error('Invalid response from server');
+      }
+      
       login(data.user, data.token);
       navigate('/home');
     } catch (err: any) {
