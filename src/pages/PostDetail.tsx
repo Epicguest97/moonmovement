@@ -22,6 +22,40 @@ const PostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // Function to build nested comment structure
+  const buildCommentTree = (flatComments: any[]): CommentType[] => {
+    const commentMap = new Map();
+    const rootComments: CommentType[] = [];
+    
+    // First pass: create all comment objects
+    flatComments.forEach(comment => {
+      const commentObj: CommentType = {
+        id: comment.id.toString(),
+        author: typeof comment.author === 'string' ? comment.author : comment.author.username,
+        content: comment.content,
+        timestamp: new Date(comment.createdAt).toLocaleString(),
+        voteScore: 0,
+        replies: []
+      };
+      commentMap.set(comment.id, commentObj);
+    });
+    
+    // Second pass: build the tree structure
+    flatComments.forEach(comment => {
+      const commentObj = commentMap.get(comment.id);
+      if (comment.parentId) {
+        const parent = commentMap.get(comment.parentId);
+        if (parent) {
+          parent.replies!.push(commentObj);
+        }
+      } else {
+        rootComments.push(commentObj);
+      }
+    });
+    
+    return rootComments;
+  };
+
   useEffect(() => {
     if (id) {
       console.log('Fetching post with ID:', id);
@@ -53,20 +87,13 @@ const PostDetail = () => {
           setLoading(false);
         });
       
-      // Fetch comments for this specific post using the new endpoint
+      // Fetch comments for this specific post
       fetch(`https://moonmovement.onrender.com/api/comments/post/${id}`)
         .then(res => res.json())
         .then(data => {
-          // Map backend comment fields to CommentType expected by frontend
-          const postComments = data.map((c: any) => ({
-            id: c.id.toString(),
-            author: typeof c.author === 'string' ? c.author : c.author.username,
-            content: c.content,
-            timestamp: new Date(c.createdAt).toLocaleString(),
-            voteScore: 0, // You can update this if you add votes to comments
-            replies: [] // You can update this if you support nested comments
-          }));
-          setComments(postComments);
+          console.log('Comments data:', data);
+          const nestedComments = buildCommentTree(data);
+          setComments(nestedComments);
         })
         .catch((error) => {
           console.error('Failed to fetch comments:', error);
@@ -133,6 +160,48 @@ const PostDetail = () => {
     } catch (err) {
       console.error('Error submitting comment:', err);
       alert('Failed to submit comment: ' + err.message);
+    }
+  };
+  
+  const handleReplySubmit = async (parentId: string, content: string) => {
+    if (!content.trim() || !post) return;
+    
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You must be signed in to reply.');
+      return;
+    }
+    
+    const replyData = {
+      content,
+      postId: post.id,
+      parentId: Number(parentId)
+    };
+    
+    try {
+      const res = await fetch('https://moonmovement.onrender.com/api/comments', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(replyData),
+      });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to submit reply');
+      }
+      
+      // Refresh comments to get the updated nested structure
+      const commentsRes = await fetch(`https://moonmovement.onrender.com/api/comments/post/${id}`);
+      const commentsData = await commentsRes.json();
+      const nestedComments = buildCommentTree(commentsData);
+      setComments(nestedComments);
+      setPost({ ...post, commentCount: post.commentCount + 1 });
+    } catch (err) {
+      console.error('Error submitting reply:', err);
+      throw err;
     }
   };
   
@@ -216,7 +285,11 @@ const PostDetail = () => {
         {comments.length > 0 ? (
           <div className="bg-sidebar rounded-md border border-sidebar-border p-4">
             <h3 className="font-medium mb-4 text-white">{comments.length} Comments</h3>
-            <CommentList comments={comments} />
+            <CommentList 
+              comments={comments} 
+              postId={post.id}
+              onReplySubmit={handleReplySubmit}
+            />
           </div>
         ) : (
           <div className="bg-sidebar rounded-md border border-sidebar-border p-4 text-center">
