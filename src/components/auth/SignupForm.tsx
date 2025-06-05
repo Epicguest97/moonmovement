@@ -38,7 +38,7 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
     // Initialize Google Sign-In
     if (window.google) {
       window.google.accounts.id.initialize({
-        client_id: '971351411666-mq31r82qcak4iarqdq5gfr4k4741f4cq.apps.googleusercontent.com.apps.googleusercontent.com',
+        client_id: '971351411666-mq31r82qcak4iarqdq5gfr4k4741f4cq.apps.googleusercontent.com',
         callback: handleGoogleResponse
       });
       
