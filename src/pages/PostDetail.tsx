@@ -128,6 +128,7 @@ const PostDetail = () => {
     const commentData = {
       content: commentText,
       postId: post.id,
+      // Don't send authorId or username - the server should determine this from the token
     };
     
     try {
@@ -175,7 +176,8 @@ const PostDetail = () => {
     const replyData = {
       content,
       postId: post.id,
-      parentId: parseInt(parentId) // Make sure this is converted to a number
+      parentId: parseInt(parentId)
+      // Don't send authorId or username - the server should determine this from the token
     };
     
     console.log('Submitting reply data:', replyData);

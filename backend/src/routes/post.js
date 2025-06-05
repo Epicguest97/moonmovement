@@ -1,7 +1,7 @@
-
 const express = require('express');
 const router = express.Router();
 const prisma = require('../utils/prisma');
+const { authenticateToken } = require('../middleware/auth');
 
 // GET all posts
 router.get('/', async (req, res) => {
@@ -57,38 +57,39 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST a new post
-router.post('/', async (req, res) => {
-  const { title, content, subreddit, author, imageUrl, linkUrl, tags } = req.body;
+// Create a new post
+router.post('/', authenticateToken, async (req, res) => {
   try {
-    const user = await prisma.user.findUnique({ where: { username: author } });
-    if (!user) return res.status(400).json({ error: 'Author not found' });
-    const newPost = await prisma.post.create({
+    const { title, content, subreddit, imageUrl, linkUrl, tags } = req.body;
+    
+    // IMPORTANT: Use the authenticated user's ID from the JWT token
+    // instead of trusting any user ID sent in the request body
+    const userId = req.user.userId;
+    
+    const post = await prisma.post.create({
       data: {
         title,
         content,
-        authorId: user.id,
-        subreddit,
+        subreddit: subreddit || 'general',
         imageUrl,
         linkUrl,
-        tags: tags ? tags.join(',') : null, // Store tags as comma-separated string
+        tags,
+        authorId: userId  // Use the authenticated user's ID
       },
-      include: { 
+      include: {
         author: {
           select: {
             id: true,
             username: true,
-            email: true,
-            createdAt: true
+            email: true
           }
-        }, 
-        comments: true, 
-        votes: true 
+        }
       }
     });
-    res.status(201).json(newPost);
+    
+    res.status(201).json(post);
   } catch (err) {
-    console.error('POST / Error:', err);
+    console.error('Error creating post:', err);
     res.status(500).json({ error: 'Failed to create post', details: err.message });
   }
 });

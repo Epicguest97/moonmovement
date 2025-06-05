@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const prisma = require('../utils/prisma');
@@ -21,24 +20,39 @@ router.get('/', async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   const { content, postId, parentId } = req.body;
   
-  if (!content || !postId) {
-    return res.status(400).json({ error: 'Content and postId are required' });
-  }
-  
   try {
+    // IMPORTANT: Use the authenticated user's ID from the JWT token
+    // instead of trusting any user ID sent in the request body
+    const userId = req.user.userId;
+    
+    // Validate that the post exists
+    const post = await prisma.post.findUnique({ where: { id: parseInt(postId) }});
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    
+    // Create the comment using the authenticated user's ID
     const comment = await prisma.comment.create({
       data: {
         content,
-        postId: Number(postId),
-        authorId: req.user.id, // Use authenticated user's ID
-        parentId: parentId ? Number(parentId) : null
+        postId: parseInt(postId),
+        authorId: userId,
+        parentId: parentId ? parseInt(parentId) : null
       },
-      include: { author: true, post: true }
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true
+          }
+        }
+      }
     });
+    
     res.status(201).json(comment);
   } catch (err) {
     console.error('Error creating comment:', err);
-    res.status(500).json({ error: 'Failed to create comment' });
+    res.status(500).json({ error: 'Failed to create comment', details: err.message });
   }
 });
 
