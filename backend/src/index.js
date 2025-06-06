@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -13,6 +14,7 @@ const communityRouter = require('./routes/community');
 const postRouter = require('./routes/post');
 const newsRouter = require('./routes/news');
 const authRoutes = require('./routes/auth');
+const userSettingsRoutes = require('./routes/userSettings');
 const startupsRouter = require('./routes/startups');
 
 app.get("/", (req, res) => {
@@ -21,6 +23,7 @@ app.get("/", (req, res) => {
 
 app.use('/api/posts', require('./routes/post'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', userSettingsRoutes); // Add userSettings routes under /api/auth
 app.use('/api/comments', require('./routes/comments'));
 app.use('/api/news', require('./routes/news'));
 app.use('/api/startups', require('./routes/startups'));
