@@ -95,7 +95,13 @@ const UserProfile = () => {
   };
 
   const handleStartChat = async () => {
-    if (!isLoggedIn || !username) return;
+    if (!username) return;
+    
+    // For testing: Allow starting chat even if not logged in (will show appropriate message later)
+    if (!isLoggedIn) {
+      alert("Please log in to start a chat");
+      return;
+    }
     
     try {
       setStartingChat(true);
