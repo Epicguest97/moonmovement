@@ -172,7 +172,7 @@ const UserProfile = () => {
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
                   <h1 className="text-3xl font-bold text-sidebar-foreground">u/{profile.username}</h1>
-                  {!isCurrentUser && isLoggedIn && (
+                  {!isCurrentUser && (
                     <Button
                       onClick={handleStartChat}
                       disabled={startingChat}
