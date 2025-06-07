@@ -163,7 +163,7 @@ const Chat = () => {
                   rooms={chatRooms}
                   selectedRoom={selectedRoom}
                   onRoomSelect={handleRoomSelect}
-                  currentUserId={user?.id}
+                  currentUserId={user?.id ? Number(user.id) : undefined}
                 />
               )}
             </div>
@@ -174,7 +174,7 @@ const Chat = () => {
             {selectedRoom ? (
               <ChatWindow
                 room={selectedRoom}
-                currentUserId={user?.id}
+                currentUserId={user?.id ? Number(user.id) : undefined}
                 onMessageSent={fetchChatRooms}
               />
             ) : (
