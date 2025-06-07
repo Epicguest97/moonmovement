@@ -81,7 +81,7 @@ const PostCard = ({ post }: PostCardProps) => {
             </Link>
             <span className="mx-1">•</span>
             Posted by{" "}
-            <Link to={`/user/${authorName}`} className="hover:underline mx-1 text-gray-400">
+            <Link to={`/u/${authorName}`} className="hover:underline mx-1 text-gray-400">
               u/{authorName}
             </Link>
             <span className="mx-1">•</span>
