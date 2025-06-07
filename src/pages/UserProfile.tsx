@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Calendar, Cake, MapPin, MessageSquare, Users, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -51,9 +51,11 @@ interface UserProfileData {
 const UserProfile = () => {
   const { username } = useParams<{ username: string }>();
   const { user: currentUser, isLoggedIn } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [startingChat, setStartingChat] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -90,6 +92,34 @@ const UserProfile = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleStartChat = async () => {
+    if (!isLoggedIn || !username) return;
+    
+    try {
+      setStartingChat(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('https://moonmovement.onrender.com/api/chat/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ username })
+      });
+
+      if (response.ok) {
+        const chatRoom = await response.json();
+        navigate('/chat');
+      } else {
+        console.error('Failed to start chat');
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+    } finally {
+      setStartingChat(false);
+    }
   };
 
   const isCurrentUser = isLoggedIn && currentUser?.username === username;
@@ -140,7 +170,20 @@ const UserProfile = () => {
               </Avatar>
               
               <div className="flex-1">
-                <h1 className="text-3xl font-bold text-sidebar-foreground mb-2">u/{profile.username}</h1>
+                <div className="flex items-center justify-between mb-2">
+                  <h1 className="text-3xl font-bold text-sidebar-foreground">u/{profile.username}</h1>
+                  {!isCurrentUser && isLoggedIn && (
+                    <Button
+                      onClick={handleStartChat}
+                      disabled={startingChat}
+                      className="bg-sidebar-primary hover:bg-sidebar-primary/80 text-white"
+                    >
+                      <MessageSquare size={16} className="mr-2" />
+                      {startingChat ? 'Starting Chat...' : 'Start Chat'}
+                    </Button>
+                  )}
+                </div>
+                
                 {isCurrentUser && (
                   <p className="text-sm text-sidebar-primary mb-2">This is your profile</p>
                 )}

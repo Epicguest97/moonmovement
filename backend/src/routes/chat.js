@@ -94,16 +94,62 @@ router.post('/start', authenticateToken, async (req, res) => {
     const existingRoom = await prisma.chatRoom.findFirst({
       where: {
         isGroup: false,
+        AND: [
+          {
+            users: {
+              some: {
+                userId: currentUserId
+              }
+            }
+          },
+          {
+            users: {
+              some: {
+                userId: targetUser.id
+              }
+            }
+          }
+        ]
+      },
+      include: {
         users: {
-          every: {
-            userId: {
-              in: [currentUserId, targetUser.id]
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                isOnline: true,
+                lastSeen: true
+              }
+            }
+          }
+        },
+        messages: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1,
+          include: {
+            sender: {
+              select: {
+                id: true,
+                username: true
+              }
+            }
+          }
+        },
+        _count: {
+          select: {
+            messages: {
+              where: {
+                isRead: false,
+                senderId: {
+                  not: currentUserId
+                }
+              }
             }
           }
         }
-      },
-      include: {
-        users: true
       }
     });
 
@@ -131,6 +177,32 @@ router.post('/start', authenticateToken, async (req, res) => {
                 username: true,
                 isOnline: true,
                 lastSeen: true
+              }
+            }
+          }
+        },
+        messages: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1,
+          include: {
+            sender: {
+              select: {
+                id: true,
+                username: true
+              }
+            }
+          }
+        },
+        _count: {
+          select: {
+            messages: {
+              where: {
+                isRead: false,
+                senderId: {
+                  not: currentUserId
+                }
               }
             }
           }
