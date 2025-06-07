@@ -63,7 +63,7 @@ const UserProfile = () => {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`https://moonmovement.onrender.com/api/auth/user/${username}`);
+        const response = await fetch(`https://moonmovement.onrender.com/api/auth/u/${username}`);
         
         if (response.ok) {
           const userData = await response.json();
