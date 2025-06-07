@@ -79,7 +79,7 @@ const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
       
       const data = await res.json();
       login(data.user, data.token);
-      navigate('/home');
+      navigate('/'); // Changed from '/home' to '/'
     } catch (err: any) {
       console.error('Auth error:', err);
       setError(err.message);
